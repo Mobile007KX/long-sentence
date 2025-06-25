@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Sentence Pattern Master</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a1a;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 24px 0;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        /* Pattern selector */
+        .pattern-selector {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .pattern-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #374151;
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .pattern-card {
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .pattern-card:hover {
+            border-color: #5B21B6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(91, 33, 182, 0.1);
+        }
+
+        .pattern-card.active {
+            background: #5B21B6;
+            color: white;
+            border-color: #5B21B6;
+        }
+
+        .pattern-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .pattern-desc {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Sentence list */
+        .sentence-list {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .sentence-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            color: #6b7280;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sentence-item:hover {
+            background: #f9fafb;
+            border-color: #5B21B6;
+            color: #374151;
+        }
+
+        .sentence-item.active {
+            background: #EDE9FE;
+            border-color: #5B21B6;
+            color: #5B21B6;
+            font-weight: 500;
+        }
+
+        /* Original sentence box */
+        .original-box {
+            background: white;
+            padding: 36px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            min-height: 140px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .difficulty-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #5B21B6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .sentence-text {
+            font-size: 24px;
+            line-height: 1.8;
+            color: #374151;
+            width: 100%;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            height: 26px;
+            background: #5B21B6;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Analysis box */
+        .analysis-box {
+            background: white;
+            padding: 36px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            min-height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stage-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .stage-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #E5E7EB;
+            transition: all 0.3s ease;
+        }
+
+        .stage-dot.active {
+            background: #5B21B6;
+            transform: scale(1.3);
+        }
+
+        .analysis-title {
+            position: absolute;
+            top: 20px;
+            left: 36px;
+            font-size: 14px;
+            color: #6B7280;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .analysis-title.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .analysis-content {
+            font-size: 24px;
+            line-height: 1.8;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            padding-top: 20px;
+        }
+
+        /* Component styles */
+        .subject { 
+            color: #2563EB;
+            font-weight: 600;
+            background: rgba(37, 99, 235, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border-bottom: 3px solid #2563EB;
+            display: inline-block;
+            margin: 2px 0;
+            animation: highlight 0.5s ease;
+        }
+        
+        .verb { 
+            color: #DC2626;
+            font-weight: 600;
+            background: rgba(220, 38, 38, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border-bottom: 3px solid #DC2626;
+            display: inline-block;
+            margin: 2px 0;
+            animation: highlight 0.5s ease 0.2s;
+        }
+        
+        .object { 
+            color: #059669;
+            font-weight: 600;
+            background: rgba(5, 150, 105, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border-bottom: 3px solid #059669;
+            display: inline-block;
+            margin: 2px 0;
+            animation: highlight 0.5s ease 0.4s;
+        }
+        
+        .complement { 
+            color: #7C3AED;
+            font-weight: 600;
+            background: rgba(124, 58, 237, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border-bottom: 3px solid #7C3AED;
+            display: inline-block;
+            margin: 2px 0;
+            animation: highlight 0.5s ease 0.6s;
+        }
+
+        .adverbial {
+            color: #EA580C;
+            font-weight: 600;
+            background: rgba(234, 88, 12, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border-bottom: 3px solid #EA580C;
+            display: inline-block;
+            margin: 2px 0;
+            animation: highlight 0.5s ease 0.8s;
+        }
+        
+        .extra { 
+            color: #6B7280;
+            background: rgba(107, 114, 128, 0.08);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-style: italic;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes highlight {
+            0% {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Folded extras */
+        details {
+            display: inline;
+            cursor: pointer;
+        }
+
+        summary {
+            display: inline-block;
+            color: #6B7280;
+            background: #F3F4F6;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            user-select: none;
+            transition: all 0.2s ease;
+            margin: 0 4px;
+            border: 1px dashed #D1D5DB;
+        }
+
+        summary:hover {
+            background: #E5E7EB;
+            color: #374151;
+            border-style: solid;
+        }
+
+        summary::marker,
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        /* Skeleton display */
+        .skeleton-wrapper {
+            text-align: center;
+            animation: slideUp 0.5s ease;
+            padding: 20px 0;
+        }
+
+        .skeleton-label {
+            color: #6B7280;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .skeleton-sentence {
+            font-size: 26px;
+            color: #1F2937;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+            border-radius: 12px;
+            display: inline-block;
+            border: 2px solid #5B21B6;
+            line-height: 1.6;
+        }
+
+        .pattern-badge {
+            display: inline-block;
+            background: #5B21B6;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'SF Mono', monospace;
+            font-weight: 500;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 36px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: #5B21B6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4C1D95;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(91, 33, 182, 0.25);
+        }
+
+        .btn-secondary {
+            background: #F3F4F6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #E5E7EB;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Empty state */
+        .empty-state {
+            color: #9CA3AF;
+            font-size: 18px;
+            text-align: center;
+            padding: 40px;
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .sentence-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sentence-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .sentence-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .sentence-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .pattern-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sentence-text,
+            .analysis-content {
+                font-size: 20px;
+            }
+            
+            .controls {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->        <div class="header">
+            <h1>英语句型结构大师</h1>
+            <p>通过可视化分析，掌握英语五大基本句型的奥秘</p>
+        </div>
+
+        <!-- Pattern selector -->
+        <div class="pattern-selector">
+            <div class="pattern-title">选择句型学习</div>
+            <div class="pattern-grid">
+                <div class="pattern-card" onclick="selectPattern(1)">
+                    <div class="pattern-name">① SV</div>
+                    <div class="pattern-desc">主谓结构</div>
+                </div>
+                <div class="pattern-card" onclick="selectPattern(2)">
+                    <div class="pattern-name">② SVP</div>
+                    <div class="pattern-desc">主系表结构</div>
+                </div>
+                <div class="pattern-card active" onclick="selectPattern(3)">
+                    <div class="pattern-name">③ SVO</div>
+                    <div class="pattern-desc">主谓宾结构</div>
+                </div>
+                <div class="pattern-card" onclick="selectPattern(4)">
+                    <div class="pattern-name">④ SVOO</div>
+                    <div class="pattern-desc">主谓双宾结构</div>
+                </div>
+                <div class="pattern-card" onclick="selectPattern(5)">
+                    <div class="pattern-name">⑤ SVOC</div>
+                    <div class="pattern-desc">主谓宾补结构</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sentence list -->
+        <div class="sentence-list" id="sentenceList">
+            <!-- Sentences will be populated here -->
+        </div>
+
+        <!-- Original sentence -->
+        <div class="original-box">
+            <div class="difficulty-badge" id="difficultyBadge">难度 ★★★</div>
+            <div class="sentence-text">
+                <span id="typewriterText"></span><span class="cursor" id="cursor"></span>
+            </div>
+        </div>
+
+        <!-- Analysis display -->
+        <div class="analysis-box">
+            <div class="stage-indicator">
+                <div class="stage-dot" id="dot1"></div>
+                <div class="stage-dot" id="dot2"></div>
+                <div class="stage-dot" id="dot3"></div>
+            </div>
+            <div class="analysis-title" id="analysisTitle"></div>
+            <div class="analysis-content" id="analysisContent">
+                <div class="empty-state">选择一个句子开始学习</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-secondary" id="btnStart" onclick="startNewSentence()">
+                开始新句子
+            </button>
+            <button class="btn btn-primary" id="btn1" onclick="showStage(1)" style="display: none;">
+                ① 标记成分
+            </button>
+            <button class="btn btn-primary" id="btn2" onclick="showStage(2)" disabled style="display: none;">
+                ② 折叠修饰
+            </button>
+            <button class="btn btn-primary" id="btn3" onclick="showStage(3)" disabled style="display: none;">
+                ③ 提取骨干
+            </button>
+        </div>
+    </div>
+
+    <script src="sentence-database.js"></script>
+    <script>
+        // Use the complete sentence database from external file
+        const sentenceDatabase = fullSentenceDatabase;
+
+        // State
+        let currentPattern = 3; // Default to SVO
+        let currentSentenceIndex = 0;
+        let isTyping = false;
+        let currentStage = 0;
+        let typingInterval;
+
+        // Initialize
+        function init() {
+            populateSentenceList();
+            selectSentence(0);
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.key >= '1' && e.key <= '3' && !isTyping) {
+                    const stage = parseInt(e.key);
+                    if (document.getElementById(`btn${stage}`).disabled === false) {
+                        showStage(stage);
+                    }
+                }
+            });
+        }
+
+        // Select pattern
+        function selectPattern(pattern) {
+            currentPattern = pattern;
+            currentSentenceIndex = 0;
+            
+            // Update UI
+            document.querySelectorAll('.pattern-card').forEach((card, index) => {
+                card.classList.toggle('active', index + 1 === pattern);
+            });
+            
+            populateSentenceList();
+            selectSentence(0);
+        }
+
+        // Populate sentence list
+        function populateSentenceList() {
+            const list = document.getElementById('sentenceList');
+            const sentences = sentenceDatabase[currentPattern] || [];
+            
+            list.innerHTML = sentences.map((sentence, index) => {
+                const preview = sentence.plain.substring(0, 60) + '...';
+                const stars = '★'.repeat(sentence.difficulty);
+                return `
+                    <div class="sentence-item ${index === 0 ? 'active' : ''}" onclick="selectSentence(${index})">
+                        <span>${index + 1}. ${preview}</span>
+                        <span style="float: right; color: #5B21B6;">${stars}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Select sentence
+        function selectSentence(index) {
+            currentSentenceIndex = index;
+            
+            // Update UI
+            document.querySelectorAll('.sentence-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+            
+            // Update difficulty badge
+            const sentence = sentenceDatabase[currentPattern][index];
+            document.getElementById('difficultyBadge').textContent = `难度 ${'★'.repeat(sentence.difficulty)}`;
+            
+            // Start typewriter
+            startTypewriter();
+        }
+
+        // Start new sentence
+        function startNewSentence() {
+            const nextIndex = (currentSentenceIndex + 1) % sentenceDatabase[currentPattern].length;
+            selectSentence(nextIndex);
+        }
+
+        // Typewriter effect (slower)
+        function startTypewriter() {
+            const sentence = sentenceDatabase[currentPattern][currentSentenceIndex];
+            const text = sentence.plain;
+            const element = document.getElementById('typewriterText');
+            const cursor = document.getElementById('cursor');
+            
+            element.textContent = '';
+            let charIndex = 0;
+            isTyping = true;
+            
+            // Reset everything
+            resetAnalysis();
+            
+            // Show stage buttons, hide start button
+            document.getElementById('btnStart').style.display = 'none';
+            document.getElementById('btn1').style.display = 'inline-block';
+            document.getElementById('btn2').style.display = 'inline-block';
+            document.getElementById('btn3').style.display = 'inline-block';
+            
+            typingInterval = setInterval(() => {
+                if (charIndex < text.length) {
+                    element.textContent += text[charIndex];
+                    charIndex++;
+                } else {
+                    clearInterval(typingInterval);
+                    isTyping = false;
+                    cursor.style.display = 'inline-block';
+                    
+                    // Enable first button
+                    document.getElementById('btn1').disabled = false;
+                }
+            }, 60); // Slower typing speed
+        }
+
+        // Reset analysis
+        function resetAnalysis() {
+            currentStage = 0;
+            document.getElementById('analysisContent').innerHTML = '<div class="empty-state">点击按钮开始分析句子结构</div>';
+            document.getElementById('analysisTitle').classList.remove('show');
+            
+            // Reset dots
+            document.querySelectorAll('.stage-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+            
+            // Reset buttons
+            document.getElementById('btn1').disabled = true;
+            document.getElementById('btn2').disabled = true;
+            document.getElementById('btn3').disabled = true;
+        }
+
+        // Show stage
+        function showStage(stage) {
+            if (isTyping || stage < 1 || stage > 3) return;
+            
+            const sentence = sentenceDatabase[currentPattern][currentSentenceIndex];
+            currentStage = stage;
+            
+            // Update dots
+            document.querySelectorAll('.stage-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index < stage);
+            });
+            
+            // Update title
+            const titles = ['', '标记句子成分', '折叠修饰成分', '句子骨干结构'];
+            document.getElementById('analysisTitle').textContent = titles[stage];
+            document.getElementById('analysisTitle').classList.add('show');
+            
+            // Update content with animation
+            const content = document.getElementById('analysisContent');
+            content.style.opacity = '0';
+            content.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                switch (stage) {
+                    case 1:
+                        content.innerHTML = sentence.colored;
+                        document.getElementById('btn2').disabled = false;
+                        break;
+                    case 2:
+                        content.innerHTML = sentence.folded;
+                        document.getElementById('btn3').disabled = false;
+                        break;
+                    case 3:
+                        content.innerHTML = `
+                            <div class="skeleton-wrapper">
+                                <div class="skeleton-label">句子骨干结构</div>
+                                <div class="skeleton-sentence">${sentence.skeleton}</div>
+                                <br>
+                                <span class="pattern-badge">Pattern: ${sentence.pattern}</span>
+                            </div>
+                        `;
+                        // Show start button after final stage
+                        setTimeout(() => {
+                            document.getElementById('btnStart').style.display = 'inline-block';
+                        }, 1000);
+                        break;
+                }
+                
+                content.style.transition = 'all 0.3s ease';
+                content.style.opacity = '1';
+                content.style.transform = 'translateY(0)';
+            }, 150);
+        }
+
+        // Start app
+        init();
+    </script>
+</body>
+</html>
