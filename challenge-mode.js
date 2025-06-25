@@ -165,6 +165,29 @@ class ChallengeMode {
                     },
                     markedSentence: "<span class='non-core'>The</span> <span class='subject core'>flowers</span> <span class='verb core'>smell</span> <span class='complement core'>wonderful</span> <span class='non-core'>today</span>.",
                     modifiers: ["The", "today"]
+                },
+                {
+                    sentence: "My sister reads books every night.",
+                    pattern: "SVO",
+                    skeleton: "Sister reads books",
+                    components: {
+                        subject: "sister",
+                        verb: "reads",
+                        object: "books"
+                    },
+                    markedSentence: "<span class='non-core'>My</span> <span class='subject core'>sister</span> <span class='verb core'>reads</span> <span class='object core'>books</span> <span class='non-core'>every night</span>.",
+                    modifiers: ["My", "every night"]
+                },
+                {
+                    sentence: "The sun rises slowly in the east.",
+                    pattern: "SV",
+                    skeleton: "Sun rises",
+                    components: {
+                        subject: "sun",
+                        verb: "rises"
+                    },
+                    markedSentence: "<span class='non-core'>The</span> <span class='subject core'>sun</span> <span class='verb core'>rises</span> <span class='non-core'>slowly in the east</span>.",
+                    modifiers: ["The", "slowly", "in the east"]
                 }
             ],
             medium: [
@@ -205,6 +228,31 @@ class ChallengeMode {
                     },
                     markedSentence: "<span class='non-core'>The board</span> <span class='subject core'>members</span> <span class='verb core'>elected</span> <span class='object core'>John</span> <span class='complement core'>president</span> <span class='non-core'>after careful consideration</span>.",
                     modifiers: ["The board", "after careful consideration"]
+                },
+                {
+                    sentence: "The company has been developing innovative products since 2020.",
+                    pattern: "SVO",
+                    skeleton: "Company has been developing products",
+                    components: {
+                        subject: "company",
+                        verb: "has been developing",
+                        object: "products"
+                    },
+                    markedSentence: "<span class='non-core'>The</span> <span class='subject core'>company</span> <span class='verb core'>has been developing</span> <span class='non-core'>innovative</span> <span class='object core'>products</span> <span class='non-core'>since 2020</span>.",
+                    modifiers: ["The", "innovative", "since 2020"]
+                },
+                {
+                    sentence: "My grandmother tells us fascinating stories about her childhood.",
+                    pattern: "SVOO",
+                    skeleton: "Grandmother tells us stories",
+                    components: {
+                        subject: "grandmother",
+                        verb: "tells",
+                        indirectObject: "us",
+                        object: "stories"
+                    },
+                    markedSentence: "<span class='non-core'>My</span> <span class='subject core'>grandmother</span> <span class='verb core'>tells</span> <span class='indirect-object core'>us</span> <span class='non-core'>fascinating</span> <span class='object core'>stories</span> <span class='non-core'>about her childhood</span>.",
+                    modifiers: ["My", "fascinating", "about her childhood"]
                 }
             ],
             hard: [
