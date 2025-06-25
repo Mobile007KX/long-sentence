@@ -835,8 +835,7 @@
     <script src="expansion-database.js"></script>
     <script>
         // Use extended expansion database if available
-        const expansionData = typeof extendedExpansionDatabase !== 'undefined' ? extendedExpansionDatabase : expansionDatabase;
-            1: [ // SV expansions
+        const expansionDatabase = {
                 {
                     steps: [
                         { label: "基础句型", text: "Birds fly." },
@@ -923,6 +922,9 @@
         let currentExpansionExample = 0;
         let currentExpansionStep = 0;
         let autoPlayInterval;
+
+        // Use extended expansion database if available
+        const expansionData = typeof extendedExpansionDatabase !== 'undefined' ? extendedExpansionDatabase : expansionDatabase;
 
         // Tab switching
         function switchTab(tab) {
