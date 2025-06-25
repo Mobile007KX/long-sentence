@@ -103,22 +103,24 @@ class ChallengeMode {
 3. skeleton: 只包含最核心的主干单词，去除所有冠词、形容词、副词等修饰语
 4. components: 只写核心单词，不要修饰语
 
-重要：
-- skeleton应该非常简洁，只有核心词汇
-- components中每个成分只写核心单词，不要the/a/an等
-- 确保生成的句子符合指定主题和难度要求
+重要规则：
+- 谓语动词要包含完整的动词短语（助动词+主动词）
+- 例如："have been studying" → 整体作为verb
+- 例如："will have completed" → 整体作为verb  
+- 被动语态："is being developed" → 整体作为verb
+- skeleton应该保留动词的完整形式，其他只要核心词
 
-示例（专家级别）：
-输入句子："The groundbreaking research, which was conducted by leading scientists who had been studying climate patterns for decades, ultimately revealed that the complex interactions between ocean currents and atmospheric conditions significantly influence global weather systems."
+示例：
+句子："The scientists have been developing new technologies for sustainable energy."
 输出：
 {
-  "sentence": "The groundbreaking research, which was conducted by leading scientists who had been studying climate patterns for decades, ultimately revealed that the complex interactions between ocean currents and atmospheric conditions significantly influence global weather systems.",
+  "sentence": "The scientists have been developing new technologies for sustainable energy.",
   "pattern": "SVO",
-  "skeleton": "research revealed interactions influence systems",
+  "skeleton": "scientists have been developing technologies",
   "components": {
-    "subject": "research",
-    "verb": "revealed", 
-    "object": "interactions influence systems"
+    "subject": "scientists",
+    "verb": "have been developing", 
+    "object": "technologies"
   }
 }
 
@@ -589,9 +591,6 @@ class ChallengeMode {
                     放弃（显示答案）
                 </button>
             </div>
-            
-            <div class="challenge-result" id="challenge-result" style="display: none;">
-            </div>
         `;
         
         // 添加交互事件
@@ -804,30 +803,26 @@ class ChallengeMode {
         clearInterval(this.timer);
         this.isCompleted = true;
         
-        // 显示时间到的结果
-        const resultDiv = document.getElementById('challenge-result');
-        resultDiv.innerHTML = `
-            <div class="result-card">
-                <h3>⏰ 时间到！</h3>
-                <div class="grade-display grade-F">F</div>
-                
-                <div class="timeout-message">
-                    <p>很遗憾，时间用完了！</p>
-                    <p>让我们看看正确答案吧。</p>
-                </div>
-                
-                <div class="action-buttons">
-                    <button class="btn-next-challenge btn-primary" onclick="challengeMode.showAnswerAndContinue()">
-                        查看答案并继续 →
-                    </button>
-                </div>
-            </div>
-        `;
+        // 计算0分结果
+        const result = {
+            correct: 0,
+            incorrect: this.selectedTokens.size,
+            missing: this.currentChallenge.skeleton.split(' ').length,
+            accuracy: 0,
+            precision: 0,
+            timeBonus: 0,
+            score: 0
+        };
         
-        resultDiv.style.display = 'block';
+        // 显示结果
+        this.showResult(result);
         
-        // 更新分数显示为0
-        document.querySelector('.score-value').textContent = '0';
+        // 显示时间到提示
+        const actionsDiv = document.querySelector('.challenge-actions');
+        const currentContent = actionsDiv.innerHTML;
+        actionsDiv.innerHTML = `
+            <div class="timeout-message">⏰ 时间到！</div>
+        ` + currentContent;
     }
     
     /**
@@ -908,159 +903,75 @@ class ChallengeMode {
      * 显示结果
      */
     showResult(result) {
-        const resultDiv = document.getElementById('challenge-result');
+        // 停止计时
+        clearInterval(this.timer);
+        this.isCompleted = true;
         
         let grade = 'C';
         if (result.accuracy >= 90) grade = 'S';
         else if (result.accuracy >= 80) grade = 'A';
         else if (result.accuracy >= 70) grade = 'B';
         
-        // 显示原句和用户答案对比
-        const sentenceDiv = document.getElementById('challenge-sentence');
-        sentenceDiv.style.pointerEvents = 'none'; // 禁用交互
+        // 在原句上显示正确答案
+        this.showCorrectAnswerOnSentence();
         
-        resultDiv.innerHTML = `
-            <div class="result-card">
-                <h3>本题得分</h3>
-                <div class="grade-display grade-${grade}">${grade}</div>
-                
-                <div class="result-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">准确率</span>
-                        <span class="stat-value">${result.accuracy}%</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">精确率</span>
-                        <span class="stat-value">${result.precision}%</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">时间奖励</span>
-                        <span class="stat-value">+${result.timeBonus}</span>
-                    </div>
+        // 显示结果统计（不用弹窗）
+        const statsHtml = `
+            <div class="inline-result">
+                <div class="grade-badge grade-${grade}">${grade}</div>
+                <div class="score-info">
+                    <span class="score-big">${result.score}</span>
+                    <span class="score-label">分</span>
                 </div>
-                
-                <div class="result-breakdown">
-                    <h4>成分分析</h4>
-                    <p class="analysis-item"><span class="check-mark">✅</span> 正确标记：${result.correct} 个</p>
-                    <p class="analysis-item"><span class="cross-mark">❌</span> 错误标记：${result.incorrect} 个</p>
-                    <p class="analysis-item"><span class="warning-mark">⚠️</span> 遗漏单词：${result.missing} 个</p>
-                </div>
-                
-                <div class="correct-answer">
-                    <h4>正确答案</h4>
-                    <p><strong>句型：</strong>${this.currentChallenge.pattern} - ${this.getPatternExplanation()}</p>
-                    <p><strong>句子骨干：</strong>${this.currentChallenge.skeleton}</p>
-                    <div class="components-display">
-                        ${this.renderComponentsBreakdown()}
-                    </div>
-                </div>
-                
-                <div class="score-summary">
-                    <span class="score-label">本题得分</span>
-                    <span class="score-number">${result.score}</span>
-                </div>
-                
-                <div class="action-buttons">
-                    <button class="btn-next-challenge btn-primary" onclick="challengeMode.nextChallenge()">
-                        下一题 →
-                    </button>
+                <div class="accuracy-info">
+                    准确率: ${result.accuracy}%
                 </div>
             </div>
         `;
         
-        resultDiv.style.display = 'block';
+        // 在操作按钮区域显示结果
+        const actionsDiv = document.querySelector('.challenge-actions');
+        actionsDiv.innerHTML = statsHtml + `
+            <button class="btn-next-challenge btn-primary" onclick="challengeMode.nextChallenge()">
+                下一题 →
+            </button>
+        `;
         
-        // 更新分数显示
-        document.querySelector('.score-value').textContent = result.score;
+        // 记录本题分数
+        this.sessionScores.push(result.score);
         
-        // 在原句中显示正确答案
-        this.highlightCorrectAnswer();
+        // 更新总分
+        const totalScore = this.sessionScores.reduce((sum, s) => sum + s, 0);
+        document.querySelector('.score-value').textContent = totalScore;
+        
+        // 禁用句子交互
+        document.getElementById('challenge-sentence').style.pointerEvents = 'none';
     }
 
     /**
      * 显示答案
      */
-    showAnswer(isTimeUp = false) {
+    showAnswer(isGiveUp = true) {
         if (!this.isCompleted) {
             clearInterval(this.timer);
             this.isCompleted = true;
-        }
-        
-        // 使用标注信息显示答案
-        if (this.currentChallenge.markedSentence) {
-            // 重新渲染带有完整标注的句子
-            const sentenceContainer = document.getElementById('challenge-sentence');
-            sentenceContainer.innerHTML = this.currentChallenge.markedSentence
-                .replace(/class='subject core'/g, "class='word-token correct-answer subject-core'")
-                .replace(/class='verb core'/g, "class='word-token correct-answer verb-core'")
-                .replace(/class='object core'/g, "class='word-token correct-answer object-core'")
-                .replace(/class='complement core'/g, "class='word-token correct-answer complement-core'")
-                .replace(/class='indirect-object core'/g, "class='word-token correct-answer indirect-object-core'")
-                .replace(/class='non-core'/g, "class='word-token modifier'")
-                .replace(/<span/g, '<span style="display: inline-block; margin: 2px;"');
-        } else {
-            // 降级方案：基于骨干单词标记
-            const skeleton = this.currentChallenge.skeleton.toLowerCase().split(' ');
-            const words = document.querySelectorAll('.word-token');
             
-            words.forEach(token => {
-                const word = token.dataset.word.toLowerCase();
-                if (skeleton.includes(word)) {
-                    token.classList.add('correct-answer');
-                } else {
-                    token.classList.add('modifier');
-                }
-            });
+            // 如果是放弃，分数为0
+            const score = isGiveUp ? 0 : this.score;
+            
+            // 显示0分结果
+            const result = {
+                correct: 0,
+                incorrect: 0,
+                missing: this.currentChallenge.skeleton.split(' ').length,
+                accuracy: 0,
+                precision: 0,
+                timeBonus: 0,
+                score: 0
+            };
+            
+            this.showResult(result);
         }
-        
-        // 显示答案解析
-        const resultDiv = document.getElementById('challenge-result');
-        const analysisHTML = `
-            <div class="answer-analysis">
-                <h3>${isTimeUp ? '⏰ 时间到！' : '📖 答案解析'}</h3>
-                
-                <div class="skeleton-display">
-                    <p class="skeleton-label">句子骨干：</p>
-                    <p class="skeleton-text">${this.currentChallenge.skeleton}</p>
-                </div>
-                
-                <div class="components-breakdown">
-                    <h4>成分分析：</h4>
-                    ${this.renderComponentsBreakdown()}
-                </div>
-                
-                <div class="pattern-explanation">
-                    <h4>句型说明：</h4>
-                    <p>${this.getPatternExplanation()}</p>
-                </div>
-                
-                ${this.renderColorLegend()}
-                
-                <div class="next-challenge-section">
-                    <button class="btn-next-challenge btn-large" onclick="challengeMode.nextChallenge()">
-                        继续下一题 →
-                    </button>
-                    ${this.challengeSession ? `<p class="progress-info">进度：${this.currentChallengeIndex + 1} / ${this.challengeSession.length}</p>` : ''}
-                </div>
-            </div>
-        `;
-        
-        if (resultDiv.innerHTML === '') {
-            resultDiv.innerHTML = analysisHTML;
-        } else {
-            // 如果已经有结果卡片，只添加答案解析部分
-            resultDiv.innerHTML += analysisHTML;
-        }
-        
-        resultDiv.style.display = 'block';
-        
-        // 滚动到下一题按钮位置，确保用户能看到
-        setTimeout(() => {
-            const nextBtn = document.querySelector('.btn-next-challenge');
-            if (nextBtn) {
-                nextBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 100);
     }
     
     /**
@@ -1092,31 +1003,64 @@ class ChallengeMode {
     }
 
     /**
-     * 高亮显示正确答案
+     * 在句子上显示正确答案
      */
-    highlightCorrectAnswer() {
+    showCorrectAnswerOnSentence() {
         const words = document.querySelectorAll('.word-token');
-        const skeleton = this.currentChallenge.skeleton.toLowerCase().split(' ');
+        const components = this.currentChallenge.components;
         
+        // 创建一个映射，标记每个单词属于哪个成分
+        const wordComponentMap = new Map();
+        
+        // 处理每个成分
+        if (components.subject) {
+            const subjectWords = components.subject.toLowerCase().split(' ');
+            subjectWords.forEach(word => wordComponentMap.set(word, 'subject'));
+        }
+        
+        if (components.verb) {
+            const verbWords = components.verb.toLowerCase().split(' ');
+            verbWords.forEach(word => wordComponentMap.set(word, 'verb'));
+        }
+        
+        if (components.object) {
+            const objectWords = components.object.toLowerCase().split(' ');
+            objectWords.forEach(word => wordComponentMap.set(word, 'object'));
+        }
+        
+        if (components.complement) {
+            const complementWords = components.complement.toLowerCase().split(' ');
+            complementWords.forEach(word => wordComponentMap.set(word, 'complement'));
+        }
+        
+        if (components.indirectObject) {
+            const indirectObjectWords = components.indirectObject.toLowerCase().split(' ');
+            indirectObjectWords.forEach(word => wordComponentMap.set(word, 'indirect-object'));
+        }
+        
+        // 应用样式
         words.forEach(token => {
             const word = token.dataset.word.toLowerCase();
-            if (skeleton.includes(word)) {
-                token.classList.add('correct-answer');
-                // 根据成分类型添加不同颜色
-                const components = this.currentChallenge.components;
-                if (components.subject && components.subject.toLowerCase().includes(word)) {
-                    token.classList.add('subject-core');
-                } else if (components.verb && components.verb.toLowerCase().includes(word)) {
-                    token.classList.add('verb-core');
-                } else if (components.object && components.object.toLowerCase().includes(word)) {
-                    token.classList.add('object-core');
-                } else if (components.complement && components.complement.toLowerCase().includes(word)) {
-                    token.classList.add('complement-core');
-                } else if (components.indirectObject && components.indirectObject.toLowerCase().includes(word)) {
-                    token.classList.add('indirect-object-core');
+            const componentType = wordComponentMap.get(word);
+            
+            if (componentType) {
+                // 是骨干成分
+                token.classList.add('skeleton-word', `${componentType}-word`);
+                
+                // 检查用户是否选中了
+                if (token.classList.contains('selected')) {
+                    token.classList.add('user-correct');
+                } else {
+                    token.classList.add('user-missed');
                 }
             } else {
-                token.classList.add('modifier');
+                // 修饰语
+                token.classList.add('modifier-word');
+                
+                // 如果用户选中了修饰语，标记为错误
+                if (token.classList.contains('selected')) {
+                    token.classList.add('user-wrong');
+                }
             }
             
             // 移除选择状态

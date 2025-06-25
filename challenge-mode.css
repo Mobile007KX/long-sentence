@@ -488,19 +488,128 @@
     color: white !important;
 }
 
-.word-token.complement-core {
-    background: #8b5cf6 !important;
-    color: white !important;
+/* 答案展示样式 - 使用圆圈标记 */
+.skeleton-word {
+    position: relative;
+    font-weight: 600;
+    z-index: 1;
 }
 
-.word-token.indirect-object-core {
-    background: #ec4899 !important;
-    color: white !important;
+.skeleton-word::after {
+    content: '';
+    position: absolute;
+    left: -6px;
+    right: -6px;
+    top: -8px;
+    bottom: -8px;
+    border: 3px solid;
+    border-radius: 20px;
+    opacity: 0.8;
+    z-index: -1;
 }
 
-.word-token.modifier {
-    opacity: 0.5;
+/* 不同成分的颜色 */
+.subject-word::after {
+    border-color: #3b82f6;
+}
+
+.verb-word::after {
+    border-color: #10b981;
+}
+
+.object-word::after {
+    border-color: #f59e0b;
+}
+
+.complement-word::after {
+    border-color: #8b5cf6;
+}
+
+.indirect-object-word::after {
+    border-color: #ec4899;
+}
+
+/* 用户选择状态 */
+.user-correct {
+    background-color: rgba(16, 185, 129, 0.1);
+}
+
+.user-missed {
+    background-color: rgba(239, 68, 68, 0.1);
+    animation: blink 1s ease-in-out 2;
+}
+
+.user-wrong {
+    background-color: rgba(239, 68, 68, 0.2);
     text-decoration: line-through;
+    opacity: 0.6;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.modifier-word {
+    opacity: 0.5;
+}
+
+/* 内联结果显示 */
+.inline-result {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+}
+
+.grade-badge {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+}
+
+.score-info {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+.score-big {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.accuracy-info {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* 超时消息 */
+.timeout-message {
+    padding: 10px 20px;
+    background: #fef2f2;
+    color: #dc2626;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
 }
 
 @keyframes highlight {
