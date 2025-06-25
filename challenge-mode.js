@@ -222,20 +222,14 @@ class ChallengeMode {
      * 计算最高分数
      */
     calculateMaxScore(challengeData) {
-        // 基础分：找到所有骨干成分
-        let score = 100;
+        // 基础分：100分
+        // 精确率奖励：最高20分
+        // 时间奖励：每秒2分
+        const baseScore = 100;
+        const precisionBonus = 20;
+        const timeBonus = challengeData.timeLimit * 2;
         
-        // 时间奖励：根据难度给予额外分数
-        const timeBonus = {
-            easy: 20,
-            medium: 30,
-            hard: 40,
-            expert: 50
-        };
-        
-        score += timeBonus[challengeData.difficulty] || 30;
-        
-        return score;
+        return baseScore + precisionBonus + timeBonus;
     }
 
     /**
@@ -573,6 +567,7 @@ class ChallengeMode {
             <div class="challenge-instruction">
                 <p>🎯 点击或划选句子中的<strong>主干成分</strong>（主语、谓语、宾语等）</p>
                 <p class="hint">提示：忽略所有修饰语，只标记核心成分</p>
+                <p class="score-hint">本题满分：<strong>${this.currentChallenge.maxScore}分</strong>（基础分100 + 时间奖励${this.currentChallenge.timeLimit * 2}）</p>
                 <p class="shortcut-hint">快捷键：空格键检查答案 | Enter键下一题 | R键重置</p>
             </div>
             
@@ -866,33 +861,75 @@ class ChallengeMode {
         const skeleton = this.currentChallenge.skeleton.toLowerCase().split(' ');
         const selected = selectedWords.map(w => w.toLowerCase());
         
-        // 计算准确率
+        // 获取动词成分的所有单词
+        const verbWords = this.currentChallenge.components.verb ? 
+            this.currentChallenge.components.verb.toLowerCase().split(' ') : [];
+        
+        // 计算准确率 - 更灵活的处理
         let correct = 0;
         let incorrect = 0;
+        let coreWordsFound = 0;
         
+        // 统计核心词（不包括助动词）
+        const coreWords = [];
+        if (this.currentChallenge.components.subject) {
+            coreWords.push(...this.currentChallenge.components.subject.toLowerCase().split(' '));
+        }
+        if (this.currentChallenge.components.object) {
+            coreWords.push(...this.currentChallenge.components.object.toLowerCase().split(' '));
+        }
+        if (this.currentChallenge.components.complement) {
+            coreWords.push(...this.currentChallenge.components.complement.toLowerCase().split(' '));
+        }
+        
+        // 对于动词，只要选中了主要动词就算对
+        const mainVerbs = verbWords.filter(word => 
+            !['am', 'is', 'are', 'was', 'were', 'been', 'being', 'be',
+              'have', 'has', 'had', 'having', 
+              'do', 'does', 'did', 'doing',
+              'will', 'would', 'shall', 'should', 'may', 'might', 
+              'can', 'could', 'must', 'ought'].includes(word)
+        );
+        
+        if (mainVerbs.length > 0) {
+            coreWords.push(...mainVerbs);
+        } else {
+            // 如果没有主要动词（如系动词），则包含所有动词词汇
+            coreWords.push(...verbWords);
+        }
+        
+        // 检查选择的单词
         selected.forEach(word => {
-            if (skeleton.includes(word)) {
+            if (skeleton.includes(word) || verbWords.includes(word)) {
                 correct++;
+                if (coreWords.includes(word)) {
+                    coreWordsFound++;
+                }
             } else {
                 incorrect++;
             }
         });
         
-        const missing = skeleton.filter(word => !selected.includes(word)).length;
+        // 计算遗漏的核心词
+        const missing = coreWords.filter(word => !selected.includes(word)).length;
         
-        // 计算分数
-        const accuracy = correct / skeleton.length;
+        // 计算分数 - 更宽松的评分标准
+        const coreAccuracy = coreWordsFound / coreWords.length;
         const precision = correct / (correct + incorrect || 1);
         const timeBonus = this.timeLeft > 0 ? this.timeLeft * 2 : 0;
         
-        this.score = Math.round(accuracy * 100 + precision * 30 + timeBonus);
+        // 基础分更高，错误扣分更少
+        const baseScore = Math.round(coreAccuracy * 100);
+        const precisionBonus = Math.round(precision * 20);
+        
+        this.score = Math.min(100, baseScore + precisionBonus + timeBonus);
         
         return {
             correct,
             incorrect,
             missing,
-            total: skeleton.length,
-            accuracy: Math.round(accuracy * 100),
+            total: coreWords.length,
+            accuracy: Math.round(coreAccuracy * 100),
             precision: Math.round(precision * 100),
             timeBonus,
             score: this.score
@@ -924,7 +961,12 @@ class ChallengeMode {
                     <span class="score-label">分</span>
                 </div>
                 <div class="accuracy-info">
-                    准确率: ${result.accuracy}%
+                    <div>准确率: ${result.accuracy}%</div>
+                    <div class="score-breakdown">
+                        基础分: ${Math.round(result.accuracy)} + 
+                        精确率: ${Math.round(result.precision * 0.2)} + 
+                        时间: ${result.timeBonus}
+                    </div>
                 </div>
             </div>
         `;

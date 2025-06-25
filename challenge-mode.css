@@ -420,6 +420,18 @@
     opacity: 0.8;
 }
 
+.score-hint {
+    font-size: 13px;
+    color: #3b82f6;
+    font-weight: 500;
+    margin: 5px 0;
+}
+
+.score-hint strong {
+    color: #1e40af;
+    font-size: 14px;
+}
+
 /* 句子显示区域 - 自适应高度 */
 .challenge-sentence {
     background: white;
@@ -593,6 +605,12 @@
 .accuracy-info {
     font-size: 14px;
     color: #6b7280;
+}
+
+.score-breakdown {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 2px;
 }
 
 /* 超时消息 */
