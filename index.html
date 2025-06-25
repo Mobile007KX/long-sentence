@@ -1289,34 +1289,54 @@
     <!-- Challenge Tab Content -->
     <div id="challenge-tab" class="tab-content">
         <div class="challenge-container">
-            <!-- Difficulty Selector -->
+            <!-- Challenge Setup -->
             <div class="challenge-setup">
-                <h2>选择挑战难度</h2>
-                <div class="difficulty-selector">
-                    <div class="difficulty-card" onclick="startChallengeWithDifficulty('easy')">
-                        <div class="difficulty-icon">🌱</div>
-                        <h3>简单</h3>
-                        <p>30秒时间</p>
-                        <p>短句子，简单结构</p>
+                <h2>限时挑战设置</h2>
+                
+                <!-- 难度选择 -->
+                <div class="setting-section">
+                    <h3>选择难度</h3>
+                    <div class="difficulty-selector">
+                        <div class="difficulty-card" data-difficulty="easy">
+                            <div class="difficulty-icon">🌱</div>
+                            <h4>简单</h4>
+                            <p>30秒时间</p>
+                        </div>
+                        <div class="difficulty-card active" data-difficulty="medium">
+                            <div class="difficulty-icon">🌿</div>
+                            <h4>中等</h4>
+                            <p>20秒时间</p>
+                        </div>
+                        <div class="difficulty-card" data-difficulty="hard">
+                            <div class="difficulty-icon">🌳</div>
+                            <h4>困难</h4>
+                            <p>15秒时间</p>
+                        </div>
+                        <div class="difficulty-card" data-difficulty="expert">
+                            <div class="difficulty-icon">🔥</div>
+                            <h4>专家</h4>
+                            <p>10秒时间</p>
+                        </div>
                     </div>
-                    <div class="difficulty-card" onclick="startChallengeWithDifficulty('medium')">
-                        <div class="difficulty-icon">🌿</div>
-                        <h3>中等</h3>
-                        <p>20秒时间</p>
-                        <p>中等长度，包含修饰语</p>
+                </div>
+                
+                <!-- 题目数量选择 -->
+                <div class="setting-section">
+                    <h3>选择题目数量</h3>
+                    <div class="count-selector">
+                        <button class="count-option active" data-count="5">5题</button>
+                        <button class="count-option" data-count="10">10题</button>
+                        <button class="count-option" data-count="15">15题</button>
+                        <button class="count-option" data-count="20">20题</button>
                     </div>
-                    <div class="difficulty-card" onclick="startChallengeWithDifficulty('hard')">
-                        <div class="difficulty-icon">🌳</div>
-                        <h3>困难</h3>
-                        <p>15秒时间</p>
-                        <p>长句子，复杂结构</p>
-                    </div>
-                    <div class="difficulty-card" onclick="startChallengeWithDifficulty('expert')">
-                        <div class="difficulty-icon">🔥</div>
-                        <h3>专家</h3>
-                        <p>10秒时间</p>
-                        <p>超长句子，多重从句</p>
-                    </div>
+                </div>
+                
+                <!-- 开始按钮 -->
+                <div class="start-section">
+                    <button class="btn-start-challenge" onclick="startChallengeSession()">
+                        开始挑战
+                    </button>
+                    <p class="challenge-info">系统将为您生成 <span id="selected-count">5</span> 道 <span id="selected-difficulty">中等</span> 难度的题目</p>
                 </div>
             </div>
             
@@ -2143,21 +2163,94 @@
         }
 
         // Challenge mode functions
-        async function startChallengeWithDifficulty(difficulty) {
-            // Hide setup, show challenge area
+        let selectedDifficulty = 'medium';
+        let selectedCount = 5;
+        
+        // 初始化选择器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 难度选择
+            document.querySelectorAll('.difficulty-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.difficulty-card').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedDifficulty = this.dataset.difficulty;
+                    document.getElementById('selected-difficulty').textContent = this.querySelector('h4').textContent;
+                });
+            });
+            
+            // 数量选择
+            document.querySelectorAll('.count-option').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.count-option').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedCount = parseInt(this.dataset.count);
+                    document.getElementById('selected-count').textContent = selectedCount;
+                });
+            });
+        });
+        
+        async function startChallengeSession() {
+            // 显示生成动画
+            const overlay = document.createElement('div');
+            overlay.className = 'generating-overlay';
+            overlay.innerHTML = `
+                <div class="generating-modal">
+                    <h3>正在生成挑战题目</h3>
+                    <div class="generating-animation">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <div class="generating-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                    </div>
+                    <div class="generating-status">
+                        正在生成第 <span id="current-gen">1</span> / ${selectedCount} 题...
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            
+            // 生成挑战题目
+            const challenges = [];
+            const useAI = true; // 可以根据需要切换是否使用AI
+            
+            for (let i = 0; i < selectedCount; i++) {
+                try {
+                    // 更新进度
+                    document.getElementById('current-gen').textContent = i + 1;
+                    document.getElementById('progress-fill').style.width = `${((i + 1) / selectedCount) * 100}%`;
+                    
+                    if (useAI && i < selectedCount / 2) {
+                        // 前一半尝试用AI生成
+                        const challenge = await challengeMode.generateChallenge(selectedDifficulty);
+                        challenges.push(challenge);
+                    } else {
+                        // 后一半或AI失败时用备用句子
+                        const challenge = challengeMode.getRandomFallbackChallenge(selectedDifficulty);
+                        challenges.push(challenge);
+                    }
+                    
+                    // 添加短暂延迟，让动画更流畅
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                } catch (error) {
+                    // 如果生成失败，使用备用句子
+                    const challenge = challengeMode.getRandomFallbackChallenge(selectedDifficulty);
+                    challenges.push(challenge);
+                }
+            }
+            
+            // 移除生成动画
+            document.body.removeChild(overlay);
+            
+            // 开始挑战
             document.querySelector('.challenge-setup').style.display = 'none';
             document.getElementById('challenge-area').style.display = 'block';
             
-            // 立即使用备用句子开始，避免等待
-            const initialChallenge = challengeMode.getRandomFallbackChallenge(difficulty);
-            const challengeArea = document.getElementById('challenge-area');
-            
-            // 开始挑战
-            challengeMode.startChallenge(initialChallenge, challengeArea);
-            
-            // 同时尝试为下一个挑战预生成AI句子
-            // 这样用户完成第一个挑战后，第二个可能就是AI生成的
-            challengeMode.preGenerateNextChallenge(difficulty);
+            // 设置挑战会话
+            challengeMode.startChallengeSession(challenges, document.getElementById('challenge-area'));
         }
         
         function resetChallenge() {

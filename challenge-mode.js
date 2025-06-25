@@ -11,6 +11,11 @@ class ChallengeMode {
         this.isCompleted = false;
         this.score = 0;
         
+        // 挑战会话
+        this.challengeSession = null;
+        this.currentChallengeIndex = 0;
+        this.sessionScores = [];
+        
         // 预生成的挑战
         this.preGeneratedChallenge = null;
         this.isGenerating = false;
@@ -323,6 +328,18 @@ class ChallengeMode {
     }
 
     /**
+     * 开始挑战会话
+     */
+    startChallengeSession(challenges, container) {
+        this.challengeSession = challenges;
+        this.currentChallengeIndex = 0;
+        this.sessionScores = [];
+        
+        // 开始第一个挑战
+        this.startChallenge(challenges[0], container);
+    }
+    
+    /**
      * 开始挑战
      */
     startChallenge(challengeData, container) {
@@ -337,15 +354,16 @@ class ChallengeMode {
         
         // 启动倒计时
         this.startTimer();
-        
-        // 后台预生成下一个挑战
-        this.preGenerateNextChallenge(challengeData.difficulty);
     }
 
     /**
      * 渲染挑战界面
      */
     renderChallenge(container) {
+        // 计算进度
+        const progress = this.challengeSession ? 
+            `第 ${this.currentChallengeIndex + 1} / ${this.challengeSession.length} 题` : '';
+        
         container.innerHTML = `
             <div class="challenge-header">
                 <div class="challenge-info">
@@ -353,6 +371,7 @@ class ChallengeMode {
                         ${this.difficulties[this.currentChallenge.difficulty].name}
                     </span>
                     <span class="pattern-badge">${this.currentChallenge.pattern}</span>
+                    ${progress ? `<span class="progress-badge">${progress}</span>` : ''}
                 </div>
                 <div class="timer-container">
                     <div class="timer-circle">
@@ -865,31 +884,106 @@ class ChallengeMode {
      */
     async nextChallenge() {
         const container = document.querySelector('.challenge-container');
-        const difficulty = this.currentChallenge?.difficulty || 'medium';
         
-        // 如果有预生成的挑战，直接使用
-        if (this.preGeneratedChallenge && this.preGeneratedChallenge.difficulty === difficulty) {
-            console.log('使用预生成的挑战');
-            const challenge = this.preGeneratedChallenge;
-            this.preGeneratedChallenge = null; // 清空预生成
-            
-            // 开始新挑战
-            this.startChallenge(challenge, container);
+        // 保存当前得分
+        if (this.challengeSession) {
+            this.sessionScores.push(this.score);
+        }
+        
+        // 检查是否还有更多挑战
+        if (this.challengeSession && this.currentChallengeIndex < this.challengeSession.length - 1) {
+            // 进入下一题
+            this.currentChallengeIndex++;
+            const nextChallenge = this.challengeSession[this.currentChallengeIndex];
+            this.startChallenge(nextChallenge, container);
+        } else if (this.challengeSession) {
+            // 会话结束，显示总结
+            this.showSessionSummary(container);
         } else {
-            // 如果没有预生成或难度不匹配，显示加载状态
-            container.innerHTML = '<div class="loading">正在生成新挑战...</div>';
+            // 单个挑战模式（旧逻辑）
+            const difficulty = this.currentChallenge?.difficulty || 'medium';
             
-            try {
-                // 生成新挑战
-                const newChallenge = await this.generateChallenge(difficulty);
-                // 开始新挑战
-                this.startChallenge(newChallenge, container);
-            } catch (error) {
-                // 如果生成失败，使用备用句子
-                const fallbackChallenge = this.getRandomFallbackChallenge(difficulty);
-                this.startChallenge(fallbackChallenge, container);
+            if (this.preGeneratedChallenge && this.preGeneratedChallenge.difficulty === difficulty) {
+                console.log('使用预生成的挑战');
+                const challenge = this.preGeneratedChallenge;
+                this.preGeneratedChallenge = null;
+                this.startChallenge(challenge, container);
+            } else {
+                container.innerHTML = '<div class="loading">正在生成新挑战...</div>';
+                
+                try {
+                    const newChallenge = await this.generateChallenge(difficulty);
+                    this.startChallenge(newChallenge, container);
+                } catch (error) {
+                    const fallbackChallenge = this.getRandomFallbackChallenge(difficulty);
+                    this.startChallenge(fallbackChallenge, container);
+                }
             }
         }
+    }
+    
+    /**
+     * 显示会话总结
+     */
+    showSessionSummary(container) {
+        const totalScore = this.sessionScores.reduce((sum, score) => sum + score, 0);
+        const avgScore = Math.round(totalScore / this.sessionScores.length);
+        const maxScore = Math.max(...this.sessionScores);
+        
+        let grade = 'C';
+        if (avgScore >= 90) grade = 'S';
+        else if (avgScore >= 80) grade = 'A';
+        else if (avgScore >= 70) grade = 'B';
+        
+        container.innerHTML = `
+            <div class="session-summary">
+                <h2>挑战完成！</h2>
+                <div class="summary-grade grade-${grade}">${grade}</div>
+                
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <h3>总题数</h3>
+                        <p class="stat-number">${this.challengeSession.length}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>平均分</h3>
+                        <p class="stat-number">${avgScore}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>最高分</h3>
+                        <p class="stat-number">${maxScore}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>总得分</h3>
+                        <p class="stat-number">${totalScore}</p>
+                    </div>
+                </div>
+                
+                <div class="score-details">
+                    <h3>各题得分</h3>
+                    <div class="score-list">
+                        ${this.sessionScores.map((score, i) => `
+                            <div class="score-item">
+                                <span>第${i + 1}题</span>
+                                <span class="score-bar">
+                                    <span class="score-fill" style="width: ${score}%"></span>
+                                </span>
+                                <span>${score}分</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="summary-actions">
+                    <button class="btn btn-primary" onclick="resetChallenge()">
+                        再来一轮
+                    </button>
+                    <button class="btn btn-secondary" onclick="switchTab('analysis')">
+                        返回主页
+                    </button>
+                </div>
+            </div>
+        `;
     }
 }
 
