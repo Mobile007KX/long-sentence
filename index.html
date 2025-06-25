@@ -637,6 +637,320 @@
             font-size: 20px;
         }
 
+        /* AI Assistant Styles */
+        .ai-container {
+            padding: 30px;
+        }
+
+        .ai-mode-selector {
+            margin-bottom: 30px;
+        }
+
+        .ai-mode-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .ai-mode-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-mode-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .ai-mode-card.active {
+            border-color: #8b5cf6;
+            background: #f3f0ff;
+        }
+
+        .ai-mode-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .ai-mode-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .ai-mode-desc {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .ai-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            min-height: 300px;
+        }
+
+        .ai-mode-content {
+            display: none;
+        }
+
+        .ai-mode-content.active {
+            display: block;
+        }
+
+        .ai-config {
+            margin-bottom: 20px;
+        }
+
+        .ai-config-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .ai-config-row label {
+            font-weight: 500;
+            min-width: 100px;
+        }
+
+        .ai-config-row select {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 8px;
+        }
+
+        .difficulty-star {
+            font-size: 24px;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .difficulty-star.active {
+            color: #fbbf24;
+        }
+
+        .ai-result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            min-height: 100px;
+        }
+
+        .ai-analyze-input textarea,
+        .ai-explain-input textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 16px;
+            resize: vertical;
+            margin-bottom: 16px;
+        }
+
+        .ai-analyze-options {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .ai-explain-input input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .practice-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .stat-item {
+            background: #f3f0ff;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 24px;
+            font-weight: 600;
+            color: #8b5cf6;
+        }
+
+        .ai-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ai-status.loading {
+            display: flex;
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .ai-status.success {
+            display: flex;
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .ai-status.error {
+            display: flex;
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .ai-loading {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e7eb;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* AI Result Styles */
+        .generated-sentence-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .sentence-display {
+            font-size: 18px;
+            line-height: 1.6;
+            padding: 16px;
+            background: #f3f0ff;
+            border-radius: 6px;
+            margin: 12px 0;
+        }
+
+        .structure-analysis {
+            margin-top: 20px;
+        }
+
+        .structure-parts {
+            display: grid;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .structure-parts div {
+            padding: 8px 12px;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+
+        .modifiers ul {
+            margin: 8px 0 0 20px;
+        }
+
+        .explanation-box {
+            margin-top: 16px;
+            padding: 12px;
+            background: #fef3c7;
+            border-radius: 6px;
+        }
+
+        .analysis-result-box,
+        .explanation-result-box,
+        .recommendation-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .score-display {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .score-display h4 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .correct {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .incorrect {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .feedback-box,
+        .mistakes-box,
+        .suggestions-box {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+
+        .mistakes-box {
+            background: #fee2e2;
+        }
+
+        .suggestions-box {
+            background: #dbeafe;
+        }
+
+        .recommendation-item {
+            margin-bottom: 16px;
+        }
+
+        .encouragement {
+            margin-top: 20px;
+            padding: 16px;
+            background: #d1fae5;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 16px;
+        }
+
         @keyframes slideUp {
             from {
                 opacity: 0;
@@ -681,6 +995,10 @@
             <button class="tab-button" onclick="switchTab('expansion')">
                 句子扩展
                 <span class="tab-badge">新</span>
+            </button>
+            <button class="tab-button" onclick="switchTab('ai-assistant')">
+                AI 助手
+                <span class="tab-badge" style="background: #ff6b6b;">AI</span>
             </button>
         </div>
 
@@ -831,8 +1149,136 @@
             </div>
         </div>
     </div>
+
+    <!-- AI Assistant Tab Content -->
+    <div id="ai-assistant-tab" class="tab-content">
+        <div class="ai-container">
+            <!-- AI Mode Selector -->
+            <div class="ai-mode-selector">
+                <div class="pattern-title">选择 AI 辅助模式</div>
+                <div class="ai-mode-grid">
+                    <div class="ai-mode-card active" onclick="selectAIMode('generate')">
+                        <div class="ai-mode-icon">🎯</div>
+                        <div class="ai-mode-name">智能生成</div>
+                        <div class="ai-mode-desc">根据你的水平生成合适的句子</div>
+                    </div>
+                    <div class="ai-mode-card" onclick="selectAIMode('analyze')">
+                        <div class="ai-mode-icon">📊</div>
+                        <div class="ai-mode-name">分析助手</div>
+                        <div class="ai-mode-desc">评估你的句子分析是否正确</div>
+                    </div>
+                    <div class="ai-mode-card" onclick="selectAIMode('explain')">
+                        <div class="ai-mode-icon">💡</div>
+                        <div class="ai-mode-name">语法解释</div>
+                        <div class="ai-mode-desc">解释句子中的语法难点</div>
+                    </div>
+                    <div class="ai-mode-card" onclick="selectAIMode('practice')">
+                        <div class="ai-mode-icon">📚</div>
+                        <div class="ai-mode-name">练习建议</div>
+                        <div class="ai-mode-desc">获取个性化的学习建议</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Content Area -->
+            <div class="ai-content">
+                <!-- Generate Mode -->
+                <div id="ai-generate-mode" class="ai-mode-content active">
+                    <div class="ai-config">
+                        <div class="ai-config-row">
+                            <label>选择句型：</label>
+                            <select id="ai-pattern-select">
+                                <option value="SV">SV - 主谓结构</option>
+                                <option value="SVP">SVP - 主系表结构</option>
+                                <option value="SVO" selected>SVO - 主谓宾结构</option>
+                                <option value="SVOO">SVOO - 主谓双宾结构</option>
+                                <option value="SVOC">SVOC - 主谓宾补结构</option>
+                            </select>
+                        </div>
+                        <div class="ai-config-row">
+                            <label>难度等级：</label>
+                            <div class="difficulty-selector">
+                                <span class="difficulty-star" data-level="1">★</span>
+                                <span class="difficulty-star" data-level="2">★</span>
+                                <span class="difficulty-star active" data-level="3">★</span>
+                                <span class="difficulty-star" data-level="4">★</span>
+                                <span class="difficulty-star" data-level="5">★</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateAISentence()">
+                        生成新句子
+                    </button>
+                    <div id="ai-generated-result" class="ai-result"></div>
+                </div>
+
+                <!-- Analyze Mode -->
+                <div id="ai-analyze-mode" class="ai-mode-content">
+                    <div class="ai-analyze-input">
+                        <textarea id="ai-analyze-sentence" placeholder="输入要分析的句子..."></textarea>
+                        <div class="ai-analyze-options">
+                            <label>你认为这是什么句型？</label>
+                            <select id="ai-analyze-pattern">
+                                <option value="">请选择...</option>
+                                <option value="SV">SV - 主谓结构</option>
+                                <option value="SVP">SVP - 主系表结构</option>
+                                <option value="SVO">SVO - 主谓宾结构</option>
+                                <option value="SVOO">SVOO - 主谓双宾结构</option>
+                                <option value="SVOC">SVOC - 主谓宾补结构</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="analyzeWithAI()">
+                        提交分析
+                    </button>
+                    <div id="ai-analyze-result" class="ai-result"></div>
+                </div>
+
+                <!-- Explain Mode -->
+                <div id="ai-explain-mode" class="ai-mode-content">
+                    <div class="ai-explain-input">
+                        <textarea id="ai-explain-sentence" placeholder="输入需要解释的句子..."></textarea>
+                        <input type="text" id="ai-explain-question" placeholder="有什么具体问题吗？（可选）">
+                    </div>
+                    <button class="btn btn-primary" onclick="explainWithAI()">
+                        获取解释
+                    </button>
+                    <div id="ai-explain-result" class="ai-result"></div>
+                </div>
+
+                <!-- Practice Mode -->
+                <div id="ai-practice-mode" class="ai-mode-content">
+                    <div class="ai-practice-summary">
+                        <h3>你的学习数据</h3>
+                        <div class="practice-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">已练习句子：</span>
+                                <span class="stat-value" id="practiced-count">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">正确率：</span>
+                                <span class="stat-value" id="accuracy-rate">-</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">最常练习：</span>
+                                <span class="stat-value" id="most-practiced">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="getPracticeRecommendation()">
+                        获取学习建议
+                    </button>
+                    <div id="ai-practice-result" class="ai-result"></div>
+                </div>
+            </div>
+
+            <!-- AI Status -->
+            <div id="ai-status" class="ai-status"></div>
+        </div>
+    </div>
     <script src="sentence-database.js"></script>
     <script src="expansion-database.js"></script>
+    <script src="ai-assistant.js"></script>
     <script>
         // Use extended expansion database if available
         const expansionDatabase = {
@@ -1314,6 +1760,326 @@
 
         // Start app
         init();
+
+        // ======================
+        // AI Assistant Functions
+        // ======================
+
+        let currentAIMode = 'generate';
+        let currentDifficulty = 3;
+        let userPerformance = {
+            practicedCount: 0,
+            correctCount: 0,
+            patterns: {},
+            lastPracticed: null
+        };
+
+        // Load user performance from localStorage
+        function loadUserPerformance() {
+            const saved = localStorage.getItem('longSentencePerformance');
+            if (saved) {
+                userPerformance = JSON.parse(saved);
+                updatePracticeStats();
+            }
+        }
+
+        // Save user performance
+        function saveUserPerformance() {
+            localStorage.setItem('longSentencePerformance', JSON.stringify(userPerformance));
+        }
+
+        // Update practice stats display
+        function updatePracticeStats() {
+            document.getElementById('practiced-count').textContent = userPerformance.practicedCount;
+            const accuracy = userPerformance.practicedCount > 0 
+                ? Math.round((userPerformance.correctCount / userPerformance.practicedCount) * 100) + '%'
+                : '-';
+            document.getElementById('accuracy-rate').textContent = accuracy;
+            
+            // Find most practiced pattern
+            let mostPracticed = '-';
+            let maxCount = 0;
+            for (const pattern in userPerformance.patterns) {
+                if (userPerformance.patterns[pattern] > maxCount) {
+                    maxCount = userPerformance.patterns[pattern];
+                    mostPracticed = pattern;
+                }
+            }
+            document.getElementById('most-practiced').textContent = mostPracticed;
+        }
+
+        // Select AI mode
+        function selectAIMode(mode) {
+            currentAIMode = mode;
+            
+            // Update UI
+            document.querySelectorAll('.ai-mode-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.target.closest('.ai-mode-card').classList.add('active');
+            
+            // Show corresponding content
+            document.querySelectorAll('.ai-mode-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`ai-${mode}-mode`).classList.add('active');
+        }
+
+        // Handle difficulty selection
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('difficulty-star')) {
+                const level = parseInt(e.target.dataset.level);
+                currentDifficulty = level;
+                
+                // Update UI
+                document.querySelectorAll('.difficulty-star').forEach((star, index) => {
+                    star.classList.toggle('active', index < level);
+                });
+            }
+        });
+
+        // Show AI status
+        function showAIStatus(message, type = 'loading') {
+            const status = document.getElementById('ai-status');
+            status.className = 'ai-status ' + type;
+            
+            if (type === 'loading') {
+                status.innerHTML = '<div class="ai-loading"></div>' + message;
+            } else {
+                status.innerHTML = message;
+            }
+            
+            if (type !== 'loading') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Generate AI sentence
+        async function generateAISentence() {
+            const pattern = document.getElementById('ai-pattern-select').value;
+            const resultDiv = document.getElementById('ai-generated-result');
+            
+            showAIStatus('正在生成句子...', 'loading');
+            
+            // Get previously generated sentences to avoid repetition
+            const previousSentences = [];
+            
+            const result = await AIAssistant.generateSentence(pattern, currentDifficulty, previousSentences);
+            
+            if (result.error) {
+                showAIStatus('生成失败：' + result.error, 'error');
+                resultDiv.innerHTML = '<div style="color: #dc2626;">生成失败，请重试</div>';
+            } else {
+                showAIStatus('生成成功！', 'success');
+                
+                // Display the generated sentence with structure
+                resultDiv.innerHTML = `
+                    <div class="generated-sentence-box">
+                        <h4>生成的句子：</h4>
+                        <div class="sentence-display">${result.sentence}</div>
+                        
+                        <div class="structure-analysis">
+                            <h5>句子结构分析：</h5>
+                            <div class="structure-parts">
+                                <div><strong>主语：</strong> ${result.structure.subject}</div>
+                                <div><strong>谓语：</strong> ${result.structure.verb}</div>
+                                ${result.structure.object ? `<div><strong>宾语：</strong> ${result.structure.object}</div>` : ''}
+                                ${result.structure.complement ? `<div><strong>补语/表语：</strong> ${result.structure.complement}</div>` : ''}
+                            </div>
+                            ${result.structure.modifiers.length > 0 ? `
+                                <div class="modifiers">
+                                    <strong>修饰成分：</strong>
+                                    <ul>
+                                        ${result.structure.modifiers.map(m => `<li>${m}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="explanation-box">
+                            <strong>说明：</strong> ${result.explanation}
+                        </div>
+                        
+                        <button class="btn btn-secondary" onclick="addToDatabase('${pattern}', \`${result.sentence}\`)">
+                            添加到练习库
+                        </button>
+                    </div>
+                `;
+                
+                // Update performance tracking
+                userPerformance.practicedCount++;
+                userPerformance.patterns[pattern] = (userPerformance.patterns[pattern] || 0) + 1;
+                userPerformance.lastPracticed = new Date().toISOString();
+                saveUserPerformance();
+                updatePracticeStats();
+            }
+        }
+
+        // Analyze with AI
+        async function analyzeWithAI() {
+            const sentence = document.getElementById('ai-analyze-sentence').value;
+            const userPattern = document.getElementById('ai-analyze-pattern').value;
+            const resultDiv = document.getElementById('ai-analyze-result');
+            
+            if (!sentence || !userPattern) {
+                showAIStatus('请输入句子并选择句型', 'error');
+                return;
+            }
+            
+            showAIStatus('正在分析...', 'loading');
+            
+            // Create user analysis object
+            const userAnalysis = {
+                pattern: userPattern,
+                sentence: sentence
+            };
+            
+            // For demo purposes, create a simple correct structure
+            const correctStructure = {
+                pattern: userPattern,
+                subject: "需要AI分析",
+                verb: "需要AI分析",
+                object: userPattern.includes('O') ? "需要AI分析" : null
+            };
+            
+            const result = await AIAssistant.analyzeUserUnderstanding(sentence, userAnalysis, correctStructure);
+            
+            if (result.error) {
+                showAIStatus('分析失败：' + result.error, 'error');
+                resultDiv.innerHTML = '<div style="color: #dc2626;">分析失败，请重试</div>';
+            } else {
+                showAIStatus('分析完成！', 'success');
+                
+                resultDiv.innerHTML = `
+                    <div class="analysis-result-box">
+                        <div class="score-display">
+                            <h4>分析得分：${result.score}/100</h4>
+                            <div class="${result.correct ? 'correct' : 'incorrect'}">
+                                ${result.correct ? '✅ 分析正确！' : '❌ 还需要改进'}
+                            </div>
+                        </div>
+                        
+                        <div class="feedback-box">
+                            <h5>反馈：</h5>
+                            <p>${result.feedback}</p>
+                        </div>
+                        
+                        ${result.mistakes.length > 0 ? `
+                            <div class="mistakes-box">
+                                <h5>需要注意的地方：</h5>
+                                <ul>
+                                    ${result.mistakes.map(m => `<li>${m}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${result.suggestions.length > 0 ? `
+                            <div class="suggestions-box">
+                                <h5>学习建议：</h5>
+                                <ul>
+                                    ${result.suggestions.map(s => `<li>${s}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                // Update performance
+                if (result.correct) {
+                    userPerformance.correctCount++;
+                }
+                saveUserPerformance();
+                updatePracticeStats();
+            }
+        }
+
+        // Explain with AI
+        async function explainWithAI() {
+            const sentence = document.getElementById('ai-explain-sentence').value;
+            const question = document.getElementById('ai-explain-question').value;
+            const resultDiv = document.getElementById('ai-explain-result');
+            
+            if (!sentence) {
+                showAIStatus('请输入需要解释的句子', 'error');
+                return;
+            }
+            
+            showAIStatus('正在获取解释...', 'loading');
+            
+            const result = await AIAssistant.explainGrammarPoint(sentence, question);
+            
+            if (result.error) {
+                showAIStatus('获取解释失败：' + result.error, 'error');
+                resultDiv.innerHTML = '<div style="color: #dc2626;">获取解释失败，请重试</div>';
+            } else {
+                showAIStatus('解释完成！', 'success');
+                
+                resultDiv.innerHTML = `
+                    <div class="explanation-result-box">
+                        <h4>语法解释：</h4>
+                        <div class="explanation-content">${result.explanation.replace(/\n/g, '<br>')}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Get practice recommendation
+        async function getPracticeRecommendation() {
+            const resultDiv = document.getElementById('ai-practice-result');
+            
+            showAIStatus('正在生成学习建议...', 'loading');
+            
+            const result = await AIAssistant.generatePracticeRecommendation(userPerformance);
+            
+            if (result.error) {
+                showAIStatus('生成建议失败：' + result.error, 'error');
+                resultDiv.innerHTML = '<div style="color: #dc2626;">生成建议失败，请重试</div>';
+            } else {
+                showAIStatus('建议生成成功！', 'success');
+                
+                resultDiv.innerHTML = `
+                    <div class="recommendation-box">
+                        <h4>个性化学习建议</h4>
+                        
+                        <div class="recommendation-item">
+                            <strong>推荐练习句型：</strong> ${result.recommendedPattern}
+                        </div>
+                        
+                        <div class="recommendation-item">
+                            <strong>建议难度：</strong> ${'★'.repeat(result.recommendedDifficulty)}${'☆'.repeat(5 - result.recommendedDifficulty)}
+                        </div>
+                        
+                        <div class="recommendation-item">
+                            <strong>需要加强的方面：</strong>
+                            <ul>
+                                ${result.focusAreas.map(area => `<li>${area}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="recommendation-item">
+                            <strong>练习目标：</strong>
+                            <ul>
+                                ${result.practiceGoals.map(goal => `<li>${goal}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="encouragement">
+                            💪 ${result.encouragement}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Add generated sentence to database (for demo)
+        function addToDatabase(pattern, sentence) {
+            showAIStatus('句子已添加到练习库！', 'success');
+        }
+
+        // Load user performance on startup
+        loadUserPerformance();
     </script>
 </body>
 </html>
