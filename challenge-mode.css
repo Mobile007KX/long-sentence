@@ -389,6 +389,13 @@
     font-style: italic;
 }
 
+.shortcut-hint {
+    font-size: 11px;
+    color: #9ca3af;
+    font-style: italic;
+    opacity: 0.8;
+}
+
 /* 句子显示区域 - 自适应高度 */
 .challenge-sentence {
     background: white;
@@ -554,6 +561,29 @@
     max-width: 600px;
     max-height: 80vh;
     overflow-y: auto;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 超时消息 */
+.timeout-message {
+    margin: 20px 0;
+    font-size: 16px;
+    color: #6b7280;
+}
+
+.timeout-message p {
+    margin: 8px 0;
 }
 
 .result-card h3,
@@ -581,6 +611,7 @@
 .grade-A { background: linear-gradient(135deg, #34d399, #10b981); }
 .grade-B { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
 .grade-C { background: linear-gradient(135deg, #a78bfa, #8b5cf6); }
+.grade-F { background: linear-gradient(135deg, #f87171, #ef4444); }
 
 /* 统计数据 */
 .result-stats {
@@ -740,24 +771,76 @@
 /* 按钮样式 */
 .btn-show-answer,
 .btn-next-challenge {
-    display: block;
-    width: 180px;
-    margin: 15px auto 0;
-    padding: 10px 20px;
+    display: inline-block;
+    min-width: 180px;
+    margin: 10px;
+    padding: 12px 24px;
     background: #3b82f6;
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.btn-show-answer:hover,
-.btn-next-challenge:hover {
-    background: #2563eb;
+.btn-show-answer {
+    background: #6b7280;
+}
+
+.btn-show-answer:hover {
+    background: #4b5563;
     transform: translateY(-1px);
+}
+
+.btn-next-challenge {
+    background: #10b981;
+}
+
+.btn-next-challenge:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* 大号下一题按钮 */
+.btn-next-challenge.btn-large {
+    display: block;
+    width: 90%;
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 16px 32px;
+    font-size: 18px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-next-challenge.btn-large:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* 行动按钮容器 */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* 下一题区域 */
+.next-challenge-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #e5e7eb;
+    text-align: center;
+}
+
+.progress-info {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #6b7280;
 }
 
 /* 会话总结 */

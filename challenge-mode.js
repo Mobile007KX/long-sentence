@@ -455,6 +455,7 @@ class ChallengeMode {
             <div class="challenge-instruction">
                 <p>🎯 点击或划选句子中的<strong>主干成分</strong>（主语、谓语、宾语等）</p>
                 <p class="hint">提示：忽略所有修饰语，只标记核心成分</p>
+                <p class="shortcut-hint">快捷键：空格键检查答案 | Enter键下一题 | R键重置</p>
             </div>
             
             <div class="challenge-sentence" id="challenge-sentence">
@@ -568,6 +569,28 @@ class ChallengeMode {
             isSelecting = false;
             startIndex = -1;
         });
+        
+        // 键盘快捷键支持
+        document.addEventListener('keydown', (e) => {
+            // 如果在挑战模式界面
+            if (document.getElementById('challenge-tab').classList.contains('active')) {
+                // Enter键：如果已完成，进入下一题
+                if (e.key === 'Enter' && this.isCompleted) {
+                    e.preventDefault();
+                    this.nextChallenge();
+                }
+                // Space键：如果未完成，检查答案
+                else if (e.key === ' ' && !this.isCompleted) {
+                    e.preventDefault();
+                    this.checkAnswer();
+                }
+                // R键：重置选择
+                else if (e.key === 'r' && !this.isCompleted) {
+                    e.preventDefault();
+                    this.resetSelection();
+                }
+            }
+        });
     }
 
     /**
@@ -665,7 +688,39 @@ class ChallengeMode {
         clearInterval(this.timer);
         this.isCompleted = true;
         
-        // 自动显示答案
+        // 显示时间到的结果
+        const resultDiv = document.getElementById('challenge-result');
+        resultDiv.innerHTML = `
+            <div class="result-card">
+                <h3>⏰ 时间到！</h3>
+                <div class="grade-display grade-F">F</div>
+                
+                <div class="timeout-message">
+                    <p>很遗憾，时间用完了！</p>
+                    <p>让我们看看正确答案吧。</p>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-next-challenge btn-primary" onclick="challengeMode.showAnswerAndContinue()">
+                        查看答案并继续 →
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        resultDiv.style.display = 'block';
+        
+        // 更新分数显示为0
+        document.querySelector('.score-value').textContent = '0';
+    }
+    
+    /**
+     * 查看答案并继续
+     */
+    showAnswerAndContinue() {
+        // 清空结果区域
+        document.getElementById('challenge-result').innerHTML = '';
+        // 显示答案
         this.showAnswer(true);
     }
 
@@ -775,9 +830,14 @@ class ChallengeMode {
                     <span class="score-number">${result.score}</span>
                 </div>
                 
-                <button class="btn-show-answer" onclick="challengeMode.showAnswer()">
-                    查看正确答案
-                </button>
+                <div class="action-buttons">
+                    <button class="btn-show-answer" onclick="challengeMode.showAnswer()">
+                        查看正确答案
+                    </button>
+                    <button class="btn-next-challenge btn-primary" onclick="challengeMode.nextChallenge()">
+                        下一题 →
+                    </button>
+                </div>
             </div>
         `;
         
@@ -846,19 +906,31 @@ class ChallengeMode {
                 
                 ${this.renderColorLegend()}
                 
-                <button class="btn-next-challenge" onclick="challengeMode.nextChallenge()">
-                    下一个挑战
-                </button>
+                <div class="next-challenge-section">
+                    <button class="btn-next-challenge btn-large" onclick="challengeMode.nextChallenge()">
+                        继续下一题 →
+                    </button>
+                    ${this.challengeSession ? `<p class="progress-info">进度：${this.currentChallengeIndex + 1} / ${this.challengeSession.length}</p>` : ''}
+                </div>
             </div>
         `;
         
         if (resultDiv.innerHTML === '') {
             resultDiv.innerHTML = analysisHTML;
         } else {
+            // 如果已经有结果卡片，只添加答案解析部分
             resultDiv.innerHTML += analysisHTML;
         }
         
         resultDiv.style.display = 'block';
+        
+        // 滚动到下一题按钮位置，确保用户能看到
+        setTimeout(() => {
+            const nextBtn = document.querySelector('.btn-next-challenge');
+            if (nextBtn) {
+                nextBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
     }
     
     /**
