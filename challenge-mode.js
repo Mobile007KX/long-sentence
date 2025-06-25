@@ -354,76 +354,27 @@ class ChallengeMode {
      * 渲染句子单词
      */
     renderSentenceTokens() {
-        // 如果有标注的句子，优先使用
-        if (this.currentChallenge.markedSentence) {
-            // 解析标注的HTML，为每个单词添加交互
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = this.currentChallenge.markedSentence;
-            
-            let wordIndex = 0;
-            const processNode = (node) => {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    const words = node.textContent.trim().split(/\s+/);
-                    const fragment = document.createDocumentFragment();
-                    
-                    words.forEach((word, i) => {
-                        if (word) {
-                            const cleanWord = word.replace(/[.,!?;:]$/, '');
-                            const punctuation = word.match(/[.,!?;:]$/)?.[0] || '';
-                            
-                            const span = document.createElement('span');
-                            span.className = 'word-token';
-                            span.setAttribute('data-index', wordIndex++);
-                            span.setAttribute('data-word', cleanWord);
-                            
-                            // 从父元素继承标记类型
-                            if (node.parentElement && node.parentElement.classList.contains('core')) {
-                                span.setAttribute('data-core', 'true');
-                            }
-                            
-                            span.textContent = cleanWord;
-                            if (punctuation) {
-                                const punct = document.createElement('span');
-                                punct.className = 'punctuation';
-                                punct.textContent = punctuation;
-                                span.appendChild(punct);
-                            }
-                            
-                            fragment.appendChild(span);
-                            if (i < words.length - 1) {
-                                fragment.appendChild(document.createTextNode(' '));
-                            }
-                        }
-                    });
-                    
-                    return fragment;
-                } else if (node.nodeType === Node.ELEMENT_NODE) {
-                    const newNode = node.cloneNode(false);
-                    Array.from(node.childNodes).forEach(child => {
-                        const processed = processNode(child);
-                        if (processed) {
-                            newNode.appendChild(processed);
-                        }
-                    });
-                    return newNode;
-                }
-                return null;
-            };
-            
-            const processed = processNode(tempDiv);
-            return processed.innerHTML;
-        }
-        
-        // 降级方案：简单分词
+        // 初始显示时，不要显示任何标注，让用户自己识别
         const words = this.currentChallenge.sentence.split(' ');
         return words.map((word, index) => {
             const cleanWord = word.replace(/[.,!?;:]/, '');
             const punctuation = word.match(/[.,!?;:]/)?.[0] || '';
             
-            return `<span class="word-token" data-index="${index}" data-word="${cleanWord}">
+            // 保存单词的核心信息，但不显示
+            const isCore = this.isWordInSkeleton(cleanWord);
+            
+            return `<span class="word-token" data-index="${index}" data-word="${cleanWord}" data-core="${isCore}">
                 ${cleanWord}${punctuation ? `<span class="punctuation">${punctuation}</span>` : ''}
             </span>`;
         }).join(' ');
+    }
+    
+    /**
+     * 检查单词是否在骨干中
+     */
+    isWordInSkeleton(word) {
+        const skeleton = this.currentChallenge.skeleton.toLowerCase().split(' ');
+        return skeleton.includes(word.toLowerCase());
     }
 
     /**

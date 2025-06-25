@@ -229,7 +229,7 @@
     cursor: pointer;
 }
 
-/* 单词标记 */
+/* 单词标记 - 初始状态无颜色 */
 .word-token {
     display: inline-block;
     padding: 4px 2px;
@@ -237,6 +237,8 @@
     border-radius: 4px;
     transition: all 0.2s ease;
     position: relative;
+    color: #333;  /* 确保初始文字颜色是黑色 */
+    background: transparent;  /* 确保初始背景透明 */
 }
 
 .word-token:hover {
