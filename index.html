@@ -1445,6 +1445,14 @@
                 initExpansion();
             }
             
+            // 当切换到挑战模式时，预生成各难度的第一个句子
+            if (tab === 'challenge') {
+                console.log('进入挑战模式，开始预生成句子...');
+                // 为每个难度预生成一个句子（可选）
+                // 或者只为最常用的中等难度预生成
+                challengeMode.preGenerateNextChallenge('medium');
+            }
+            
             // Stop any challenge timers when switching tabs
             if (tab !== 'challenge' && typeof challengeMode !== 'undefined' && challengeMode.timer) {
                 clearInterval(challengeMode.timer);
@@ -2140,25 +2148,16 @@
             document.querySelector('.challenge-setup').style.display = 'none';
             document.getElementById('challenge-area').style.display = 'block';
             
-            // Show loading
+            // 立即使用备用句子开始，避免等待
+            const initialChallenge = challengeMode.getRandomFallbackChallenge(difficulty);
             const challengeArea = document.getElementById('challenge-area');
-            challengeArea.innerHTML = '<div class="loading">正在生成挑战句子...</div>';
             
-            try {
-                // Generate challenge
-                const challenge = await challengeMode.generateChallenge(difficulty);
-                
-                // Start challenge
-                challengeMode.startChallenge(challenge, challengeArea);
-            } catch (error) {
-                console.error('Failed to start challenge:', error);
-                challengeArea.innerHTML = `
-                    <div class="error-message">
-                        生成挑战失败，请重试
-                        <button class="btn btn-primary" onclick="resetChallenge()">返回</button>
-                    </div>
-                `;
-            }
+            // 开始挑战
+            challengeMode.startChallenge(initialChallenge, challengeArea);
+            
+            // 同时尝试为下一个挑战预生成AI句子
+            // 这样用户完成第一个挑战后，第二个可能就是AI生成的
+            challengeMode.preGenerateNextChallenge(difficulty);
         }
         
         function resetChallenge() {

@@ -11,6 +11,10 @@ class ChallengeMode {
         this.isCompleted = false;
         this.score = 0;
         
+        // 预生成的挑战
+        this.preGeneratedChallenge = null;
+        this.isGenerating = false;
+        
         // 难度配置
         this.difficulties = {
             easy: {
@@ -295,6 +299,30 @@ class ChallengeMode {
     }
 
     /**
+     * 预生成下一个挑战
+     */
+    async preGenerateNextChallenge(difficulty) {
+        // 如果已经在生成中，不重复生成
+        if (this.isGenerating) return;
+        
+        this.isGenerating = true;
+        console.log('开始后台预生成下一个挑战...');
+        
+        try {
+            // 在后台生成新挑战
+            const newChallenge = await this.generateChallenge(difficulty);
+            this.preGeneratedChallenge = newChallenge;
+            console.log('后台预生成完成！');
+        } catch (error) {
+            console.log('后台预生成失败，将使用备用句子库');
+            // 如果生成失败，预生成一个备用句子
+            this.preGeneratedChallenge = this.getRandomFallbackChallenge(difficulty);
+        } finally {
+            this.isGenerating = false;
+        }
+    }
+
+    /**
      * 开始挑战
      */
     startChallenge(challengeData, container) {
@@ -309,6 +337,9 @@ class ChallengeMode {
         
         // 启动倒计时
         this.startTimer();
+        
+        // 后台预生成下一个挑战
+        this.preGenerateNextChallenge(challengeData.difficulty);
     }
 
     /**
@@ -834,14 +865,31 @@ class ChallengeMode {
      */
     async nextChallenge() {
         const container = document.querySelector('.challenge-container');
-        container.innerHTML = '<div class="loading">正在生成新挑战...</div>';
-        
-        // 生成新挑战
         const difficulty = this.currentChallenge?.difficulty || 'medium';
-        const newChallenge = await this.generateChallenge(difficulty);
         
-        // 开始新挑战
-        this.startChallenge(newChallenge, container);
+        // 如果有预生成的挑战，直接使用
+        if (this.preGeneratedChallenge && this.preGeneratedChallenge.difficulty === difficulty) {
+            console.log('使用预生成的挑战');
+            const challenge = this.preGeneratedChallenge;
+            this.preGeneratedChallenge = null; // 清空预生成
+            
+            // 开始新挑战
+            this.startChallenge(challenge, container);
+        } else {
+            // 如果没有预生成或难度不匹配，显示加载状态
+            container.innerHTML = '<div class="loading">正在生成新挑战...</div>';
+            
+            try {
+                // 生成新挑战
+                const newChallenge = await this.generateChallenge(difficulty);
+                // 开始新挑战
+                this.startChallenge(newChallenge, container);
+            } catch (error) {
+                // 如果生成失败，使用备用句子
+                const fallbackChallenge = this.getRandomFallbackChallenge(difficulty);
+                this.startChallenge(fallbackChallenge, container);
+            }
+        }
     }
 }
 
