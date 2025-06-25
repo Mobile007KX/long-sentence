@@ -346,6 +346,30 @@
     50% { transform: translate(-50%, -50%) scale(1.1); }
 }
 
+/* 头部动作区域 */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* 退出按钮 */
+.btn-exit {
+    padding: 8px 16px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-exit:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
 /* 分数显示 - 更紧凑 */
 .score-display {
     text-align: center;
@@ -399,28 +423,27 @@
 /* 句子显示区域 - 自适应高度 */
 .challenge-sentence {
     background: white;
-    padding: 20px;
+    padding: 25px;
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     margin-bottom: 10px;
-    font-size: 18px;
-    line-height: 1.8;
+    font-size: 20px;
+    line-height: 2;
     user-select: none;
-    cursor: pointer;
     flex: 1;
     overflow-y: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    text-align: left;
     min-height: 150px;
+    max-height: 300px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
-/* 单词标记 */
+/* 单词标记 - 改进换行 */
 .word-token {
     display: inline-block;
-    padding: 4px 2px;
-    margin: 2px 0;
+    padding: 6px 10px;
+    margin: 4px 3px;
     border-radius: 4px;
     transition: all 0.2s ease;
     position: relative;
@@ -639,36 +662,80 @@
     color: #1f2937;
 }
 
-/* 结果详情 */
-.result-details {
-    background: #f3f4f6;
+/* 结果分解 */
+.result-breakdown {
+    background: #f9fafb;
     padding: 15px;
     border-radius: 8px;
-    margin-bottom: 20px;
-    text-align: left;
+    margin: 15px 0;
 }
 
-.result-details p {
-    margin: 6px 0;
+.result-breakdown h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #374151;
+}
+
+.analysis-item {
+    margin: 8px 0;
     font-size: 14px;
-    color: #4b5563;
+    display: flex;
+    align-items: center;
 }
 
-/* 最终得分 */
-.final-score {
+.check-mark {
+    color: #10b981;
+    margin-right: 8px;
+}
+
+.cross-mark {
+    color: #ef4444;
+    margin-right: 8px;
+}
+
+.warning-mark {
+    color: #f59e0b;
+    margin-right: 8px;
+}
+
+/* 正确答案展示 */
+.correct-answer {
+    background: #ecfdf5;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    border: 1px solid #10b981;
+}
+
+.correct-answer h4 {
+    margin-top: 0;
+    color: #065f46;
+}
+
+.components-display {
+    margin-top: 10px;
+}
+
+/* 分数总结 */
+.score-summary {
+    text-align: center;
     margin: 20px 0;
+    padding: 15px;
+    background: #f3f4f6;
+    border-radius: 8px;
 }
 
-.score-label {
+.score-summary .score-label {
     display: block;
     font-size: 14px;
     color: #6b7280;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 
-.score-number {
+.score-summary .score-number {
     display: block;
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 700;
     color: #1f2937;
 }

@@ -25,26 +25,30 @@ class ChallengeMode {
             easy: {
                 name: '简单',
                 time: 30,
-                sentenceLength: 'short',
-                complexity: 1
+                sentenceLength: 'medium',
+                complexity: 1,
+                description: '基础句型，15-20个单词，简单修饰语'
             },
             medium: {
                 name: '中等', 
-                time: 20,
-                sentenceLength: 'medium',
-                complexity: 2
+                time: 25,
+                sentenceLength: 'long',
+                complexity: 2,
+                description: '复合句型，20-30个单词，包含从句'
             },
             hard: {
                 name: '困难',
-                time: 15,
-                sentenceLength: 'long',
-                complexity: 3
+                time: 20,
+                sentenceLength: 'very_long',
+                complexity: 3,
+                description: '复杂句型，30-40个单词，多重从句和修饰'
             },
             expert: {
                 name: '专家',
-                time: 10,
-                sentenceLength: 'very_long',
-                complexity: 4
+                time: 15,
+                sentenceLength: 'academic',
+                complexity: 4,
+                description: '学术级别，40+单词，托福/雅思难度'
             }
         };
     }
@@ -72,12 +76,26 @@ class ChallengeMode {
         const randomTheme = themes[Math.floor(Math.random() * themes.length)];
         
         // 简化提示词，减少上下文占用
+        // 根据难度调整提示词
+        let complexityGuide = '';
+        if (difficulty === 'expert') {
+            complexityGuide = `
+- 必须包含多个从句（定语从句、状语从句等）
+- 使用高级词汇和学术表达
+- 句子结构要类似托福/雅思阅读材料
+- 包含复杂的逻辑关系（因果、转折、递进等）`;
+        } else if (difficulty === 'hard') {
+            complexityGuide = `
+- 包含至少一个从句结构
+- 使用较复杂的词汇
+- 有多层修饰关系`;
+        }
+        
         const prompt = `生成一个${config.name}难度的英语句子，要求：
 - 句型：随机选择SV/SVP/SVO/SVOO/SVOC之一
 - 长度：${this.getSentenceLengthDescription(config.sentenceLength)}
 - 主题：${randomTheme}
-- 包含修饰成分但主干清晰
-- 避免使用teacher/student等教育类词汇
+- 包含修饰成分但主干必须清晰可识别${complexityGuide}
 
 返回格式要求：
 1. sentence: 完整句子
@@ -88,19 +106,19 @@ class ChallengeMode {
 重要：
 - skeleton应该非常简洁，只有核心词汇
 - components中每个成分只写核心单词，不要the/a/an等
-- 确保生成的句子符合指定主题
+- 确保生成的句子符合指定主题和难度要求
 
-示例：
-输入句子："The young students quickly understood the difficult concept yesterday."
+示例（专家级别）：
+输入句子："The groundbreaking research, which was conducted by leading scientists who had been studying climate patterns for decades, ultimately revealed that the complex interactions between ocean currents and atmospheric conditions significantly influence global weather systems."
 输出：
 {
-  "sentence": "The young students quickly understood the difficult concept yesterday.",
+  "sentence": "The groundbreaking research, which was conducted by leading scientists who had been studying climate patterns for decades, ultimately revealed that the complex interactions between ocean currents and atmospheric conditions significantly influence global weather systems.",
   "pattern": "SVO",
-  "skeleton": "students understood concept",
+  "skeleton": "research revealed interactions influence systems",
   "components": {
-    "subject": "students",
-    "verb": "understood", 
-    "object": "concept"
+    "subject": "research",
+    "verb": "revealed", 
+    "object": "interactions influence systems"
   }
 }
 
@@ -190,12 +208,12 @@ class ChallengeMode {
      */
     getSentenceLengthDescription(length) {
         const descriptions = {
-            'short': '10-15个单词',
-            'medium': '15-25个单词',
-            'long': '25-35个单词',
-            'very_long': '35个单词以上'
+            'medium': '15-20个单词，包含基础修饰语',
+            'long': '20-30个单词，包含从句结构',
+            'very_long': '30-40个单词，多重从句和复杂修饰',
+            'academic': '40个单词以上，学术文章级别的复杂句'
         };
-        return descriptions[length] || '15-25个单词';
+        return descriptions[length] || '20-30个单词';
     }
 
     /**
@@ -539,9 +557,14 @@ class ChallengeMode {
                         <span class="timer-text">${this.timeLeft}</span>
                     </div>
                 </div>
-                <div class="score-display">
-                    <span class="score-label">得分</span>
-                    <span class="score-value">0</span>
+                <div class="header-actions">
+                    <button class="btn-exit" onclick="challengeMode.exitChallenge()">
+                        退出挑战
+                    </button>
+                    <div class="score-display">
+                        <span class="score-label">得分</span>
+                        <span class="score-value">0</span>
+                    </div>
                 </div>
             </div>
             
@@ -892,9 +915,13 @@ class ChallengeMode {
         else if (result.accuracy >= 80) grade = 'A';
         else if (result.accuracy >= 70) grade = 'B';
         
+        // 显示原句和用户答案对比
+        const sentenceDiv = document.getElementById('challenge-sentence');
+        sentenceDiv.style.pointerEvents = 'none'; // 禁用交互
+        
         resultDiv.innerHTML = `
             <div class="result-card">
-                <h3>挑战结果</h3>
+                <h3>本题得分</h3>
                 <div class="grade-display grade-${grade}">${grade}</div>
                 
                 <div class="result-stats">
@@ -912,21 +939,28 @@ class ChallengeMode {
                     </div>
                 </div>
                 
-                <div class="result-details">
-                    <p>✅ 正确标记：${result.correct} 个</p>
-                    <p>❌ 错误标记：${result.incorrect} 个</p>
-                    <p>⚠️ 遗漏单词：${result.missing} 个</p>
+                <div class="result-breakdown">
+                    <h4>成分分析</h4>
+                    <p class="analysis-item"><span class="check-mark">✅</span> 正确标记：${result.correct} 个</p>
+                    <p class="analysis-item"><span class="cross-mark">❌</span> 错误标记：${result.incorrect} 个</p>
+                    <p class="analysis-item"><span class="warning-mark">⚠️</span> 遗漏单词：${result.missing} 个</p>
                 </div>
                 
-                <div class="final-score">
-                    <span class="score-label">最终得分</span>
+                <div class="correct-answer">
+                    <h4>正确答案</h4>
+                    <p><strong>句型：</strong>${this.currentChallenge.pattern} - ${this.getPatternExplanation()}</p>
+                    <p><strong>句子骨干：</strong>${this.currentChallenge.skeleton}</p>
+                    <div class="components-display">
+                        ${this.renderComponentsBreakdown()}
+                    </div>
+                </div>
+                
+                <div class="score-summary">
+                    <span class="score-label">本题得分</span>
                     <span class="score-number">${result.score}</span>
                 </div>
                 
                 <div class="action-buttons">
-                    <button class="btn-show-answer" onclick="challengeMode.showAnswer()">
-                        查看正确答案
-                    </button>
                     <button class="btn-next-challenge btn-primary" onclick="challengeMode.nextChallenge()">
                         下一题 →
                     </button>
@@ -938,6 +972,9 @@ class ChallengeMode {
         
         // 更新分数显示
         document.querySelector('.score-value').textContent = result.score;
+        
+        // 在原句中显示正确答案
+        this.highlightCorrectAnswer();
     }
 
     /**
@@ -1055,6 +1092,39 @@ class ChallengeMode {
     }
 
     /**
+     * 高亮显示正确答案
+     */
+    highlightCorrectAnswer() {
+        const words = document.querySelectorAll('.word-token');
+        const skeleton = this.currentChallenge.skeleton.toLowerCase().split(' ');
+        
+        words.forEach(token => {
+            const word = token.dataset.word.toLowerCase();
+            if (skeleton.includes(word)) {
+                token.classList.add('correct-answer');
+                // 根据成分类型添加不同颜色
+                const components = this.currentChallenge.components;
+                if (components.subject && components.subject.toLowerCase().includes(word)) {
+                    token.classList.add('subject-core');
+                } else if (components.verb && components.verb.toLowerCase().includes(word)) {
+                    token.classList.add('verb-core');
+                } else if (components.object && components.object.toLowerCase().includes(word)) {
+                    token.classList.add('object-core');
+                } else if (components.complement && components.complement.toLowerCase().includes(word)) {
+                    token.classList.add('complement-core');
+                } else if (components.indirectObject && components.indirectObject.toLowerCase().includes(word)) {
+                    token.classList.add('indirect-object-core');
+                }
+            } else {
+                token.classList.add('modifier');
+            }
+            
+            // 移除选择状态
+            token.classList.remove('selected', 'selecting');
+        });
+    }
+
+    /**
      * 渲染成分分解
      */
     renderComponentsBreakdown() {
@@ -1151,6 +1221,27 @@ class ChallengeMode {
         }
     }
     
+    /**
+     * 退出挑战
+     */
+    exitChallenge() {
+        // 清除计时器
+        if (this.timer) {
+            clearInterval(this.timer);
+        }
+        
+        // 重置状态
+        this.currentChallenge = null;
+        this.challengeSession = null;
+        this.currentChallengeIndex = 0;
+        this.sessionScores = [];
+        this.isCompleted = false;
+        
+        // 返回设置界面
+        document.querySelector('.challenge-setup').style.display = 'block';
+        document.getElementById('challenge-area').style.display = 'none';
+    }
+
     /**
      * 显示会话总结
      */
