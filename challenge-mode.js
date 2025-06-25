@@ -55,30 +55,24 @@ class ChallengeMode {
     async generateChallenge(difficulty = 'medium') {
         const config = this.difficulties[difficulty];
         
-        // 构建提示词，强调生成完全不同的句子
-        const prompt = `生成一个全新的英语句子用于句型分析挑战，要求：
-1. 难度等级：${config.name}
-2. 句子长度：${this.getSentenceLengthDescription(config.sentenceLength)}
-3. 复杂度：${config.complexity}/4
-4. 必须是五大基本句型之一（SV/SVP/SVO/SVOO/SVOC）
-5. 包含适量修饰成分，但主干要清晰可辨
-6. 句子主题随机（避免重复），可以是：科技、自然、教育、日常生活、商业、艺术等
-7. 确保句子语法正确、语义通顺
+        // 简化提示词，减少上下文占用
+        const prompt = `生成一个${config.name}难度的英语句子，要求：
+- 句型：随机选择SV/SVP/SVO/SVOO/SVOC之一
+- 长度：${this.getSentenceLengthDescription(config.sentenceLength)}
+- 包含修饰成分但主干清晰
 
-返回JSON格式：
+只返回JSON：
 {
-    "sentence": "完整句子",
-    "pattern": "句型（SV/SVP/SVO/SVOO/SVOC）",
-    "skeleton": "句子骨干（去除所有修饰成分）",
-    "components": {
-        "subject": "主语（不含修饰语）",
-        "verb": "谓语动词",
-        "object": "宾语（如果有）",
-        "complement": "补语（如果有）",
-        "indirectObject": "间接宾语（如果有）"
-    },
-    "markedSentence": "标注后的句子，使用HTML标签：<span class='subject core'>主语</span>等",
-    "modifiers": ["修饰成分1", "修饰成分2", ...]
+  "sentence": "完整句子",
+  "pattern": "句型",
+  "skeleton": "主干（去除修饰语）",
+  "components": {
+    "subject": "主语",
+    "verb": "谓语",
+    "object": "宾语",
+    "complement": "补语",
+    "indirectObject": "间接宾语"
+  }
 }`;
 
         try {
@@ -279,13 +273,17 @@ class ChallengeMode {
                 ];
                 const data = await AIAssistant.sendRequest(messages);
                 
+                // 添加调试日志
+                console.log('AI Response:', data);
+                
                 if (data.error) {
                     throw new Error(data.error);
                 }
                 
                 // 提取AI的回复内容
-                if (data.choices && data.choices.length > 0) {
+                if (data.choices && data.choices.length > 0 && data.choices[0].message) {
                     const content = data.choices[0].message.content;
+                    console.log('AI Content:', content);
                     
                     // 尝试解析JSON部分
                     const jsonMatch = content.match(/\{[\s\S]*\}/);
@@ -293,8 +291,16 @@ class ChallengeMode {
                         return jsonMatch[0];
                     }
                     
-                    return content;
+                    // 如果没有找到JSON，尝试直接解析整个内容
+                    try {
+                        JSON.parse(content);
+                        return content;
+                    } catch (e) {
+                        console.error('JSON parse failed:', e);
+                        throw new Error('AI response is not valid JSON');
+                    }
                 } else {
+                    console.error('Unexpected AI response structure:', data);
                     throw new Error('AI response format error');
                 }
             } catch (error) {

@@ -2223,18 +2223,24 @@
                     document.getElementById('current-gen').textContent = i + 1;
                     document.getElementById('progress-fill').style.width = `${((i + 1) / selectedCount) * 100}%`;
                     
-                    if (useAI && i < selectedCount / 2) {
-                        // 前一半尝试用AI生成
-                        const challenge = await challengeMode.generateChallenge(selectedDifficulty);
-                        challenges.push(challenge);
+                    // 为了避免AI上下文限制，只有前20%的题目尝试AI生成
+                    if (useAI && i < Math.ceil(selectedCount * 0.2)) {
+                        try {
+                            const challenge = await challengeMode.generateChallenge(selectedDifficulty);
+                            challenges.push(challenge);
+                        } catch (aiError) {
+                            console.log('AI生成失败，使用备用句子');
+                            const challenge = challengeMode.getRandomFallbackChallenge(selectedDifficulty);
+                            challenges.push(challenge);
+                        }
                     } else {
-                        // 后一半或AI失败时用备用句子
+                        // 大部分题目使用备用句子库，确保稳定性
                         const challenge = challengeMode.getRandomFallbackChallenge(selectedDifficulty);
                         challenges.push(challenge);
                     }
                     
                     // 添加短暂延迟，让动画更流畅
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    await new Promise(resolve => setTimeout(resolve, 200));
                 } catch (error) {
                     // 如果生成失败，使用备用句子
                     const challenge = challengeMode.getRandomFallbackChallenge(selectedDifficulty);
