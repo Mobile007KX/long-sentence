@@ -328,28 +328,34 @@ class ChallengeMode {
                     throw new Error(data.error);
                 }
                 
-                // 提取AI的回复内容
-                if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-                    const content = data.choices[0].message.content;
-                    console.log('AI Content:', content);
-                    
-                    // 尝试解析JSON部分
-                    const jsonMatch = content.match(/\{[\s\S]*\}/);
-                    if (jsonMatch) {
-                        return jsonMatch[0];
-                    }
-                    
-                    // 如果没有找到JSON，尝试直接解析整个内容
-                    try {
-                        JSON.parse(content);
-                        return content;
-                    } catch (e) {
-                        console.error('JSON parse failed:', e);
-                        throw new Error('AI response is not valid JSON');
-                    }
+                // 处理不同的响应格式
+                let content;
+                if (data.success && data.content) {
+                    // 新格式：{success: true, content: "..."}
+                    content = data.content;
+                } else if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+                    // OpenAI格式：{choices: [{message: {content: "..."}}]}
+                    content = data.choices[0].message.content;
                 } else {
                     console.error('Unexpected AI response structure:', data);
                     throw new Error('AI response format error');
+                }
+                
+                console.log('AI Content:', content);
+                
+                // 尝试解析JSON部分
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    return jsonMatch[0];
+                }
+                
+                // 如果没有找到JSON，尝试直接解析整个内容
+                try {
+                    JSON.parse(content);
+                    return content;
+                } catch (e) {
+                    console.error('JSON parse failed:', e);
+                    throw new Error('AI response is not valid JSON');
                 }
             } catch (error) {
                 console.error('AI API call failed:', error);

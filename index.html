@@ -2215,7 +2215,6 @@
             
             // 生成挑战题目
             const challenges = [];
-            const useAI = true; // 可以根据需要切换是否使用AI
             
             for (let i = 0; i < selectedCount; i++) {
                 try {
@@ -2223,26 +2222,15 @@
                     document.getElementById('current-gen').textContent = i + 1;
                     document.getElementById('progress-fill').style.width = `${((i + 1) / selectedCount) * 100}%`;
                     
-                    // 为了避免AI上下文限制，只有前20%的题目尝试AI生成
-                    if (useAI && i < Math.ceil(selectedCount * 0.2)) {
-                        try {
-                            const challenge = await challengeMode.generateChallenge(selectedDifficulty);
-                            challenges.push(challenge);
-                        } catch (aiError) {
-                            console.log('AI生成失败，使用备用句子');
-                            const challenge = challengeMode.getRandomFallbackChallenge(selectedDifficulty);
-                            challenges.push(challenge);
-                        }
-                    } else {
-                        // 大部分题目使用备用句子库，确保稳定性
-                        const challenge = challengeMode.getRandomFallbackChallenge(selectedDifficulty);
-                        challenges.push(challenge);
-                    }
+                    // 使用AI生成每个题目
+                    const challenge = await challengeMode.generateChallenge(selectedDifficulty);
+                    challenges.push(challenge);
                     
                     // 添加短暂延迟，让动画更流畅
                     await new Promise(resolve => setTimeout(resolve, 200));
                 } catch (error) {
-                    // 如果生成失败，使用备用句子
+                    console.error('生成第' + (i+1) + '题失败:', error);
+                    // 如果AI生成失败，使用备用句子
                     const challenge = challengeMode.getRandomFallbackChallenge(selectedDifficulty);
                     challenges.push(challenge);
                 }
