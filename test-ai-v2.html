@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test AI Assistant V2</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .sentence {
+            font-size: 24px;
+            line-height: 1.8;
+            margin: 20px 0;
+        }
+        .token {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            background: #e0e0e0;
+            border-radius: 4px;
+        }
+        .subject { background: #e0e7ff; }
+        .verb { background: #d1fae5; }
+        .object { background: #fed7aa; }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>测试 AI Assistant V2 - 精确句子结构生成</h1>
+    
+    <div>
+        <label>句型：</label>
+        <select id="pattern">
+            <option value="SV">SV</option>
+            <option value="SVP">SVP</option>
+            <option value="SVO" selected>SVO</option>
+            <option value="SVOO">SVOO</option>
+            <option value="SVOC">SVOC</option>
+        </select>
+        
+        <label>难度：</label>
+        <select id="difficulty">
+            <option value="1">1星</option>
+            <option value="2">2星</option>
+            <option value="3" selected>3星</option>
+            <option value="4">4星</option>
+            <option value="5">5星</option>
+        </select>
+        
+        <button onclick="testGenerate()">生成句子</button>
+    </div>
+    
+    <div id="result" class="result"></div>
+
+    <script src="ai-assistant-v2.js"></script>
+    <script>
+        async function testGenerate() {
+            const pattern = document.getElementById('pattern').value;
+            const difficulty = parseInt(document.getElementById('difficulty').value);
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '<p>正在生成...</p>';
+            
+            try {
+                const result = await AIAssistantV2.generateSentenceV2(pattern, difficulty, []);
+                
+                if (result.error) {
+                    resultDiv.innerHTML = `<p style="color: red;">错误: ${result.error}</p>`;
+                    return;
+                }
+                
+                // 显示句子
+                let html = `<h2>生成的句子</h2>`;
+                html += `<div class="sentence">${result.sentence}</div>`;
+                
+                // 显示分词
+                html += `<h3>分词结果（tokens）</h3>`;
+                html += '<div>';
+                result.tokens.forEach((token, index) => {
+                    html += `<span class="token">${index}:${token}</span>`;
+                });
+                html += '</div>';
+                
+                // 显示标记的句子
+                html += `<h3>句子成分标记</h3>`;
+                html += '<div class="sentence">';
+                result.tokens.forEach((token, index) => {
+                    let className = 'token';
+                    
+                    // 检查属于哪个成分
+                    Object.entries(result.components).forEach(([comp, data]) => {
+                        if (data.range && index >= data.range[0] && index <= data.range[1]) {
+                            className += ' ' + comp;
+                        }
+                    });
+                    
+                    html += `<span class="${className}">${token}</span>`;
+                });
+                html += '</div>';
+                
+                // 显示详细结构
+                html += `<h3>详细结构</h3>`;
+                html += '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">错误: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
