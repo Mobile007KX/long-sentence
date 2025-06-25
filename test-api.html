@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Qwen API in Long Sentence Tool</title>
+</head>
+<body>
+    <h1>测试 Qwen API 集成</h1>
+    <button onclick="testAPI()">测试 API</button>
+    <div id="result"></div>
+
+    <script src="ai-assistant.js"></script>
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>正在测试...</p>';
+            
+            try {
+                // 测试生成句子功能
+                const result = await AIAssistant.generateSentence('SVO', 3, []);
+                
+                if (result.error) {
+                    resultDiv.innerHTML = `<p style="color: red;">错误: ${result.error}</p>`;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h2>测试成功！</h2>
+                        <p><strong>生成的句子：</strong> ${result.sentence}</p>
+                        <p><strong>句型：</strong> ${result.pattern}</p>
+                        <p><strong>难度：</strong> ${result.difficulty}星</p>
+                        <p><strong>说明：</strong> ${result.explanation}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">错误: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
