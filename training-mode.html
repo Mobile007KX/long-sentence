@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>句子主干训练模式 - 英语句型结构大师</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部控制栏 - 极简设计 */
+        .control-bar {
+            background: white;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .pattern-select {
+            padding: 6px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .difficulty-stars {
+            display: flex;
+            gap: 4px;
+        }
+
+        .star {
+            font-size: 18px;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .star.active {
+            color: #fbbf24;
+        }
+
+        .auto-mode-toggle {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #8b5cf6;
+        }
+
+        .toggle-knob {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch.active .toggle-knob {
+            left: 22px;
+        }
+
+        /* 主训练区 */
+        .training-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        /* 句子展示区 */
+        .sentence-display {
+            font-size: 32px;
+            line-height: 1.8;
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 900px;
+            position: relative;
+        }
+
+        .word {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .word:hover {
+            background: #e5e7eb;
+            transform: translateY(-2px);
+        }
+
+        .word.selected {
+            background: #8b5cf6;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .word.correct {
+            background: #10b981;
+            color: white;
+            animation: correctPulse 0.5s;
+        }
+
+        .word.incorrect {
+            background: #ef4444;
+            color: white;
+            animation: shake 0.5s;
+        }
+
+        /* 成分标签 */
+        .component-label {
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #8b5cf6;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+
+        .word.selected .component-label {
+            opacity: 1;
+        }
+
+        /* 反馈区 */
+        .feedback-area {
+            min-height: 100px;
+            text-align: center;
+        }
+
+        .feedback-message {
+            font-size: 18px;
+            padding: 20px;
+            border-radius: 8px;
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+        }
+
+        .feedback-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback-message.success {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .feedback-message.error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* 分析展示区 */
+        .analysis-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            max-width: 800px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .analysis-display.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 底部操作栏 */
+        .action-bar {
+            background: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .action-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .primary-button {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .primary-button:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+        }
+
+        .secondary-button {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .secondary-button:hover {
+            background: #e5e7eb;
+        }
+
+        /* 进度指示器 */
+        .progress-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .score {
+            font-weight: 600;
+            color: #8b5cf6;
+        }
+
+        /* 动画 */
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 自动模式特效 */
+        .auto-mode-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #8b5cf6;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auto-mode-indicator.show {
+            display: flex;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* 返回主页按钮 */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .back-button:hover {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .sentence-display {
+                font-size: 24px;
+            }
+            
+            .training-area {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 返回按钮 -->
+    <a href="index.html" class="back-button">← 返回主页</a>
+
+    <!-- 顶部控制栏 -->
+    <div class="control-bar">
+        <div class="control-group">
+            <span class="control-label">句型：</span>
+            <select class="pattern-select" id="patternSelect">
+                <option value="SV">SV</option>
+                <option value="SVP">SVP</option>
+                <option value="SVO" selected>SVO</option>
+                <option value="SVOO">SVOO</option>
+                <option value="SVOC">SVOC</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <span class="control-label">难度：</span>
+            <div class="difficulty-stars" id="difficultyStars">
+                <span class="star" data-level="1">★</span>
+                <span class="star" data-level="2">★</span>
+                <span class="star active" data-level="3">★</span>
+                <span class="star" data-level="4">★</span>
+                <span class="star" data-level="5">★</span>
+            </div>
+        </div>
+        
+        <div class="auto-mode-toggle">
+            <span class="control-label">自动模式</span>
+            <div class="toggle-switch" id="autoModeToggle">
+                <div class="toggle-knob"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主训练区 -->
+    <div class="training-area">
+        <!-- 进度指示器 -->
+        <div class="progress-indicator">
+            正确率：<span class="score" id="scoreDisplay">0/0</span>
+        </div>
+        
+        <!-- 自动模式指示器 -->
+        <div class="auto-mode-indicator" id="autoModeIndicator">
+            <div class="pulse-dot"></div>
+            <span>自动演示中</span>
+        </div>
+        
+        <!-- 句子展示区 -->
+        <div class="sentence-display" id="sentenceDisplay">
+            点击"开始训练"生成第一个句子
+        </div>
+        
+        <!-- 反馈区 -->
+        <div class="feedback-area">
+            <div class="feedback-message" id="feedbackMessage"></div>
+        </div>
+        
+        <!-- 分析展示区 -->
+        <div class="analysis-display" id="analysisDisplay"></div>
+    </div>
+
+    <!-- 底部操作栏 -->
+    <div class="action-bar">
+        <button class="action-button secondary-button" id="showAnalysisBtn" style="display: none;">
+            查看分析
+        </button>
+        <button class="action-button primary-button" id="nextBtn">
+            开始训练
+        </button>
+    </div>
+
+    <script src="ai-assistant.js"></script>
+    <script src="sentence-database.js"></script>
+    <script src="training-mode-enhanced.js"></script>
+</body>
+</html>
