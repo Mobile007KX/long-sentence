@@ -29,6 +29,25 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            height: calc(100vh - 80px); /* 动态高度 */
+            overflow: hidden;
+        }
+        
+        /* 不同标签页的高度调整 */
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 挑战模式特殊处理 */
+        #challenge-tab.active {
+            overflow: hidden;
         }
 
         /* Header */

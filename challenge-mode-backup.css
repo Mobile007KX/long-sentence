@@ -1,16 +1,12 @@
-/* 限时挑战模式样式 - 优化版 */
+/* 限时挑战模式样式 */
 
-/* 容器布局优化 */
 .challenge-container {
-    padding: 10px;
-    max-width: 1200px;
+    padding: 20px;
+    max-width: 900px;
     margin: 0 auto;
-    height: calc(100vh - 160px); /* 减去header和tab的高度 */
-    display: flex;
-    flex-direction: column;
 }
 
-/* 设置界面保持不变 */
+/* 难度选择界面 */
 .challenge-setup {
     text-align: center;
     padding: 40px 20px;
@@ -225,35 +221,40 @@
     }
 }
 
-/* 挑战区域优化 - 一屏显示 */
-#challenge-area {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+/* 错误消息 */
+.error-message {
+    text-align: center;
+    padding: 40px;
+    color: #dc2626;
+    font-size: 18px;
 }
 
-/* 挑战头部 - 更紧凑 */
+.error-message button {
+    margin-top: 20px;
+}
+
+/* 挑战头部 */
 .challenge-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 15px;
+    margin-bottom: 30px;
+    padding: 20px;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-bottom: 10px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .challenge-info {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
 }
 
 .difficulty-badge {
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
     font-weight: 600;
 }
 
@@ -278,50 +279,48 @@
 }
 
 .pattern-badge {
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
     font-weight: 600;
     background: #6366f1;
     color: white;
 }
 
 .progress-badge {
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
     font-weight: 600;
     background: #10b981;
     color: white;
 }
 
-/* 计时器 - 更小 */
+/* 计时器 */
 .timer-container {
     position: relative;
 }
 
 .timer-circle {
     position: relative;
-    width: 45px;
-    height: 45px;
+    width: 60px;
+    height: 60px;
 }
 
 .timer-circle svg {
     transform: rotate(-90deg);
-    width: 45px;
-    height: 45px;
 }
 
 .timer-bg {
     fill: none;
     stroke: #e5e7eb;
-    stroke-width: 3;
+    stroke-width: 4;
 }
 
 .timer-progress {
     fill: none;
     stroke: #3b82f6;
-    stroke-width: 3;
+    stroke-width: 4;
     stroke-linecap: round;
     transition: stroke-dashoffset 1s linear;
 }
@@ -331,7 +330,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 700;
     color: #1f2937;
 }
@@ -346,36 +345,36 @@
     50% { transform: translate(-50%, -50%) scale(1.1); }
 }
 
-/* 分数显示 - 更紧凑 */
+/* 分数显示 */
 .score-display {
     text-align: center;
 }
 
 .score-label {
     display: block;
-    font-size: 12px;
+    font-size: 14px;
     color: #6b7280;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
 }
 
 .score-value {
     display: block;
-    font-size: 20px;
+    font-size: 28px;
     font-weight: 700;
     color: #1f2937;
 }
 
-/* 挑战说明 - 更简洁 */
+/* 挑战说明 */
 .challenge-instruction {
     background: #f3f4f6;
-    padding: 8px 12px;
-    border-radius: 6px;
-    margin-bottom: 10px;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
 }
 
 .challenge-instruction p {
-    margin: 2px 0;
-    font-size: 13px;
+    margin: 4px 0;
+    font-size: 15px;
     color: #4b5563;
 }
 
@@ -384,32 +383,25 @@
 }
 
 .hint {
-    font-size: 12px;
+    font-size: 14px;
     color: #6b7280;
     font-style: italic;
 }
 
-/* 句子显示区域 - 自适应高度 */
+/* 句子显示区域 */
 .challenge-sentence {
     background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-bottom: 10px;
-    font-size: 18px;
-    line-height: 1.8;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    font-size: 20px;
+    line-height: 2;
     user-select: none;
     cursor: pointer;
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: 150px;
 }
 
-/* 单词标记 */
+/* 单词标记 - 初始状态无颜色 */
 .word-token {
     display: inline-block;
     padding: 4px 2px;
@@ -417,8 +409,8 @@
     border-radius: 4px;
     transition: all 0.2s ease;
     position: relative;
-    color: #333;
-    background: transparent;
+    color: #333;  /* 确保初始文字颜色是黑色 */
+    background: transparent;  /* 确保初始背景透明 */
 }
 
 .word-token:hover {
@@ -484,19 +476,19 @@
     color: inherit;
 }
 
-/* 操作按钮 - 更紧凑 */
+/* 操作按钮 */
 .challenge-actions {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     justify-content: center;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .challenge-actions button {
-    padding: 8px 16px;
+    padding: 10px 20px;
     border: none;
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: 8px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -530,49 +522,35 @@
     background: #dc2626;
 }
 
-/* 结果显示 - 覆盖式弹窗 */
+/* 结果显示 */
 .challenge-result {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 20px;
+    margin-top: 20px;
 }
 
-.result-card,
-.answer-analysis {
+.result-card {
     background: white;
-    padding: 25px;
+    padding: 30px;
     border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     text-align: center;
-    max-width: 600px;
-    max-height: 80vh;
-    overflow-y: auto;
 }
 
-.result-card h3,
-.answer-analysis h3 {
-    font-size: 20px;
-    margin-bottom: 15px;
+.result-card h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
     color: #1f2937;
 }
 
 /* 等级显示 */
 .grade-display {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     margin: 0 auto 20px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 36px;
+    font-size: 48px;
     font-weight: 700;
     color: white;
 }
@@ -586,7 +564,7 @@
 .result-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    gap: 20px;
     margin-bottom: 20px;
 }
 
@@ -596,14 +574,14 @@
 
 .stat-label {
     display: block;
-    font-size: 13px;
+    font-size: 14px;
     color: #6b7280;
     margin-bottom: 4px;
 }
 
 .stat-value {
     display: block;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 700;
     color: #1f2937;
 }
@@ -611,15 +589,15 @@
 /* 结果详情 */
 .result-details {
     background: #f3f4f6;
-    padding: 15px;
+    padding: 20px;
     border-radius: 8px;
     margin-bottom: 20px;
     text-align: left;
 }
 
 .result-details p {
-    margin: 6px 0;
-    font-size: 14px;
+    margin: 8px 0;
+    font-size: 16px;
     color: #4b5563;
 }
 
@@ -630,45 +608,57 @@
 
 .score-label {
     display: block;
-    font-size: 14px;
+    font-size: 16px;
     color: #6b7280;
     margin-bottom: 8px;
 }
 
 .score-number {
     display: block;
-    font-size: 36px;
+    font-size: 48px;
     font-weight: 700;
     color: #1f2937;
 }
 
 /* 答案解析 */
+.answer-analysis {
+    background: #f9fafb;
+    padding: 30px;
+    border-radius: 12px;
+    margin-top: 20px;
+    text-align: left;
+}
+
+.answer-analysis h3 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #1f2937;
+}
+
+.answer-analysis h4 {
+    font-size: 16px;
+    margin: 16px 0 8px;
+    color: #374151;
+}
+
 .skeleton-display {
     background: white;
-    padding: 12px;
+    padding: 16px;
     border-radius: 8px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     border: 2px solid #3b82f6;
 }
 
 .skeleton-label {
-    font-size: 13px;
+    font-size: 14px;
     color: #6b7280;
     margin-bottom: 4px;
 }
 
 .skeleton-text {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
     color: #1f2937;
-}
-
-.components-breakdown h4,
-.pattern-explanation h4,
-.color-legend h4 {
-    font-size: 14px;
-    margin: 12px 0 8px;
-    color: #374151;
 }
 
 .components-list {
@@ -677,9 +667,8 @@
 }
 
 .components-list li {
-    padding: 6px 0;
+    padding: 8px 0;
     border-bottom: 1px solid #e5e7eb;
-    font-size: 14px;
 }
 
 .components-list li:last-child {
@@ -694,61 +683,79 @@
 
 .pattern-explanation {
     background: #eff6ff;
-    padding: 12px;
+    padding: 16px;
     border-radius: 8px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     color: #1e40af;
-    font-size: 14px;
 }
 
 /* 颜色图例 */
 .color-legend {
     background: #f9fafb;
-    padding: 12px;
+    padding: 16px;
     border-radius: 8px;
-    margin: 15px 0;
+    margin: 20px 0;
+}
+
+.color-legend h4 {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 12px;
 }
 
 .legend-items {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
+    gap: 16px;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 13px;
+    gap: 8px;
+    font-size: 14px;
     color: #374151;
 }
 
 .color-box {
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
     display: inline-block;
 }
 
-.color-box.subject-core { background: #3b82f6; }
-.color-box.verb-core { background: #10b981; }
-.color-box.object-core { background: #f59e0b; }
-.color-box.complement-core { background: #8b5cf6; }
-.color-box.modifier { background: #e5e7eb; }
+.color-box.subject-core {
+    background: #3b82f6;
+}
+
+.color-box.verb-core {
+    background: #10b981;
+}
+
+.color-box.object-core {
+    background: #f59e0b;
+}
+
+.color-box.complement-core {
+    background: #8b5cf6;
+}
+
+.color-box.modifier {
+    background: #e5e7eb;
+}
 
 /* 按钮样式 */
 .btn-show-answer,
 .btn-next-challenge {
     display: block;
-    width: 180px;
-    margin: 15px auto 0;
-    padding: 10px 20px;
+    width: 200px;
+    margin: 20px auto 0;
+    padding: 12px 24px;
     background: #3b82f6;
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -760,31 +767,62 @@
     transform: translateY(-1px);
 }
 
+/* 加载状态 */
+.loading {
+    text-align: center;
+    padding: 60px;
+    font-size: 18px;
+    color: #6b7280;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .challenge-header {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .result-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .challenge-sentence {
+        font-size: 18px;
+        padding: 20px;
+    }
+    
+    .challenge-actions {
+        flex-direction: column;
+    }
+    
+    .challenge-actions button {
+        width: 100%;
+    }
+}
 /* 会话总结 */
 .session-summary {
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 40px 20px;
     text-align: center;
-    height: 100%;
-    overflow-y: auto;
 }
 
 .session-summary h2 {
-    font-size: 28px;
+    font-size: 32px;
     color: #1f2937;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
 .summary-grade {
-    width: 100px;
-    height: 100px;
-    margin: 0 auto 30px;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 48px;
+    font-size: 60px;
     font-weight: 700;
     color: white;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -793,25 +831,25 @@
 .summary-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    margin-bottom: 30px;
+    gap: 20px;
+    margin-bottom: 40px;
 }
 
 .stat-card {
     background: white;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .stat-card h3 {
-    font-size: 13px;
+    font-size: 14px;
     color: #6b7280;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .stat-number {
-    font-size: 28px;
+    font-size: 36px;
     font-weight: 700;
     color: #1f2937;
     margin: 0;
@@ -819,37 +857,37 @@
 
 .score-details {
     background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
     text-align: left;
 }
 
 .score-details h3 {
-    font-size: 16px;
+    font-size: 18px;
     color: #1f2937;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .score-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 .score-item {
     display: grid;
-    grid-template-columns: 50px 1fr 50px;
+    grid-template-columns: 60px 1fr 60px;
     align-items: center;
-    gap: 12px;
-    font-size: 13px;
+    gap: 16px;
+    font-size: 14px;
 }
 
 .score-bar {
-    height: 6px;
+    height: 8px;
     background: #e5e7eb;
-    border-radius: 3px;
+    border-radius: 4px;
     overflow: hidden;
     position: relative;
 }
@@ -857,21 +895,21 @@
 .score-fill {
     height: 100%;
     background: #3b82f6;
-    border-radius: 3px;
+    border-radius: 4px;
     transition: width 0.5s ease;
 }
 
 .summary-actions {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     justify-content: center;
 }
 
 .summary-actions .btn {
-    padding: 10px 24px;
+    padding: 12px 32px;
     border: none;
     border-radius: 8px;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -893,89 +931,4 @@
 
 .summary-actions .btn-secondary:hover {
     background: #d1d5db;
-}
-
-/* 加载状态 */
-.loading {
-    text-align: center;
-    padding: 40px;
-    font-size: 16px;
-    color: #6b7280;
-}
-
-/* 错误消息 */
-.error-message {
-    text-align: center;
-    padding: 30px;
-    color: #dc2626;
-    font-size: 16px;
-}
-
-.error-message button {
-    margin-top: 15px;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .challenge-container {
-        padding: 5px;
-        height: calc(100vh - 140px);
-    }
-    
-    .challenge-header {
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 10px;
-    }
-    
-    .challenge-sentence {
-        font-size: 16px;
-        padding: 15px;
-        line-height: 1.6;
-    }
-    
-    .challenge-actions {
-        flex-wrap: wrap;
-    }
-    
-    .challenge-actions button {
-        flex: 1;
-        min-width: 80px;
-        padding: 8px 12px;
-        font-size: 13px;
-    }
-    
-    .result-stats {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    
-    .summary-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .timer-circle,
-    .timer-circle svg {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .timer-text {
-        font-size: 14px;
-    }
-}
-
-/* 小屏幕优化 */
-@media (max-width: 480px) {
-    .difficulty-selector {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .count-selector {
-        flex-wrap: wrap;
-    }
-    
-    .count-option {
-        flex: 1 1 40%;
-    }
 }
