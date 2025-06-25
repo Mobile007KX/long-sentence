@@ -1,3 +1,38 @@
+/**
+ * 挑战模式扩展功能 - 答案展示增强
+ */
+
+// 扩展ChallengeMode类
+ChallengeMode.prototype.showEnhancedResult = function(result) {
+    // 停止计时
+    clearInterval(this.timer);
+    this.isCompleted = true;
+    
+    let grade = 'C';
+    if (result.accuracy >= 90) grade = 'S';
+    else if (result.accuracy >= 80) grade = 'A';
+    else if (result.accuracy >= 70) grade = 'B';
+    
+    // 创建结果展示容器
+    const resultContainer = document.createElement('div');
+    resultContainer.className = 'enhanced-result-display';
+    
+    // 显示成绩卡片
+    resultContainer.innerHTML = `
+        <div class="result-card">
+            <div class="result-header">
+                <div class="grade-display">
+                    <div class="grade-circle grade-${grade}">
+                        <span class="grade-letter">${grade}</span>
+                    </div>
+                    <div class="score-details">
+                        <div class="total-score">${result.score}分</div>
+                        <div class="accuracy-rate">准确率 ${result.accuracy}%</div>
+                    </div>
+                </div>
+                <div class="time-info">
+                    <span class="time-icon">⏱️</span>
+                    <span class="time-text">用时 ${this.currentChallenge.timeLimit - this.timeLeft}秒</span>
                 </div>
             </div>
             
@@ -48,6 +83,7 @@
     
     // 禁用句子交互
     document.getElementById('challenge-sentence').style.pointerEvents = 'none';
+};
 };
 
 /**
