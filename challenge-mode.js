@@ -1295,7 +1295,10 @@ class ChallengeMode {
                 </div>
                 
                 <div class="summary-actions">
-                    <button class="btn btn-primary" onclick="resetChallenge()">
+                    <button class="btn btn-secondary" onclick="challengeMode.exitChallenge()">
+                        返回选择难度
+                    </button>
+                    <button class="btn btn-primary" onclick="window.location.reload()">
                         再来一轮
                     </button>
                     <button class="btn btn-secondary" onclick="switchTab('analysis')">
