@@ -262,11 +262,28 @@ class ChallengeMode {
      * 调用AI API
      */
     async callAI(prompt) {
-        // 使用全局的 AI 助手实例
-        if (typeof aiAssistant !== 'undefined' && aiAssistant.callQwenAPI) {
+        // 使用全局的 AIAssistant 对象
+        if (typeof AIAssistant !== 'undefined' && AIAssistant.sendRequest) {
             try {
-                const response = await aiAssistant.callQwenAPI(prompt);
-                return response;
+                const messages = [
+                    { role: "user", content: prompt }
+                ];
+                const data = await AIAssistant.sendRequest(messages);
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // 提取AI的回复内容
+                const content = data.choices[0].message.content;
+                
+                // 尝试解析JSON部分
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    return jsonMatch[0];
+                }
+                
+                return content;
             } catch (error) {
                 console.error('AI API call failed:', error);
                 throw error;
