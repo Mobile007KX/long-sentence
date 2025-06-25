@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>渐进式答案展示测试</title>
+    <link rel="stylesheet" href="challenge-mode-optimized.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .sentence-display {
+            font-size: 24px;
+            line-height: 1.8;
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .word-token {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .word-token.selected {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+        }
+        
+        .instructions {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .grade-badge {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            border-radius: 50%;
+            color: white;
+            margin: 10px;
+        }
+        
+        .grade-S { background: #ff9800; }
+        .grade-A { background: #4caf50; }
+        .grade-B { background: #2196f3; }
+        
+        .inline-result {
+            text-align: center;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>渐进式答案展示测试</h1>
+        
+        <div class="instructions">用户已经选择了一些单词，现在展示正确答案</div>
+        
+        <div class="sentence-display">
+            <span class="word-token selected" data-word="Scientists" data-index="0">Scientists</span>
+            <span class="word-token" data-word="from" data-index="1">from</span>
+            <span class="word-token" data-word="various" data-index="2">various</span>
+            <span class="word-token" data-word="countries" data-index="3">countries</span>
+            <span class="word-token selected" data-word="have" data-index="4">have</span>
+            <span class="word-token selected" data-word="discovered" data-index="5">discovered</span>
+            <span class="word-token" data-word="a" data-index="6">a</span>
+            <span class="word-token selected" data-word="method" data-index="7">method</span>
+            <span class="word-token" data-word="to" data-index="8">to</span>
+            <span class="word-token" data-word="reduce" data-index="9">reduce</span>
+            <span class="word-token" data-word="carbon" data-index="10">carbon</span>
+            <span class="word-token" data-word="emissions" data-index="11">emissions</span>
+            <span class="word-token" data-word="significantly" data-index="12">significantly</span>
+            <span class="word-token" data-word="." data-index="13">.</span>
+        </div>
+        
+        <div id="resultArea"></div>
+        
+        <button onclick="showAnswer()" style="display: block; margin: 20px auto; padding: 10px 30px; font-size: 16px;">显示答案</button>
+    </div>
+    
+    <script>
+        // 模拟的成分数据
+        const components = {
+            subject: "Scientists",
+            verb: "have discovered",
+            object: "method"
+        };
+        
+        let currentStage = 0;
+        let autoPlayInterval = null;
+        
+        function showAnswer() {
+            console.log('Starting progressive display...');
+            
+            // 初始化渐进展示
+            const sentenceElement = document.querySelector('.sentence-display');
+            sentenceElement.classList.add('progressive-display', 'stage-0');
+            
+            // 创建单词映射
+            const words = document.querySelectorAll('.word-token');
+            const mapping = createWordComponentMapping(words, components);
+            
+            // 标记单词
+            mapping.forEach((info, index) => {
+                const token = info.element;
+                
+                // 清除之前的类
+                const isSelected = token.classList.contains('selected');
+                token.className = 'word-token';
+                
+                // 添加成分类
+                if (info.componentType) {
+                    token.classList.add('component', `${info.componentType}-component`);
+                    if (info.isCore) {
+                        token.classList.add('core');
+                    }
+                }
+                
+                // 恢复选中状态用于对比
+                if (isSelected) {
+                    token.classList.add('selected');
+                }
+            });
+            
+            // 创建控制面板
+            createDisplayControls();
+            
+            // 显示结果
+            document.getElementById('resultArea').innerHTML = `
+                <div class="inline-result">
+                    <div class="grade-badge grade-A">A</div>
+                    <div>得分: 95分</div>
+                    <div>准确率: 80% | 精确率: 100% | 时间奖励: 10分</div>
+                </div>
+            `;
+            
+            // 开始自动播放
+            setTimeout(() => {
+                autoPlay();
+            }, 500);
+        }
+        
+        function createWordComponentMapping(words, components) {
+            const mapping = new Map();
+            
+            words.forEach((token, index) => {
+                const word = token.dataset.word.toLowerCase();
+                let componentType = null;
+                let isCore = false;
+                
+                // 检查每个成分
+                for (const [compType, compText] of Object.entries(components)) {
+                    if (!compText) continue;
+                    
+                    const compWords = compText.toLowerCase().split(' ');
+                    if (compWords.includes(word)) {
+                        componentType = compType;
+                        
+                        // 判断是否为核心词
+                        if (compType === 'subject' && word === 'scientists') {
+                            isCore = true;
+                        } else if (compType === 'verb' && (word === 'have' || word === 'discovered')) {
+                            isCore = true;
+                        } else if (compType === 'object' && word === 'method') {
+                            isCore = true;
+                        }
+                        break;
+                    }
+                }
+                
+                mapping.set(index, {
+                    word: word,
+                    componentType: componentType,
+                    isCore: isCore,
+                    element: token
+                });
+            });
+            
+            return mapping;
+        }
+        
+        function createDisplayControls() {
+            const controlsHtml = `
+                <div class="progressive-controls">
+                    <div class="stage-indicator">
+                        <div class="stage-item active" data-stage="0">
+                            <div class="stage-dot"></div>
+                            <span>原句</span>
+                        </div>
+                        <div class="stage-item" data-stage="1">
+                            <div class="stage-dot"></div>
+                            <span>主干</span>
+                        </div>
+                        <div class="stage-item" data-stage="2">
+                            <div class="stage-dot"></div>
+                            <span>骨架句</span>
+                        </div>
+                        <div class="stage-item" data-stage="3">
+                            <div class="stage-dot"></div>
+                            <span>完整</span>
+                        </div>
+                    </div>
+                    
+                    <div class="skeleton-display" id="skeletonDisplay"></div>
+                    
+                    <div class="controls-buttons">
+                        <button class="control-btn" onclick="previousStage()">← 上一步</button>
+                        <button class="control-btn" onclick="nextStage()">下一步 →</button>
+                        <button class="control-btn secondary" onclick="autoPlay()">自动播放</button>
+                    </div>
+                </div>
+            `;
+            
+            document.querySelector('.sentence-display').insertAdjacentHTML('afterend', controlsHtml);
+        }
+        
+        function updateStage(stage) {
+            currentStage = stage;
+            const sentenceElement = document.querySelector('.sentence-display');
+            const skeletonDisplay = document.getElementById('skeletonDisplay');
+            
+            // 更新句子显示类
+            sentenceElement.className = `sentence-display progressive-display stage-${stage}`;
+            
+            // 更新阶段指示器
+            document.querySelectorAll('.stage-item').forEach((item, index) => {
+                item.classList.toggle('active', index <= stage);
+            });
+            
+            // 阶段2：显示骨架句
+            if (stage === 2) {
+                showSkeletonSentence(skeletonDisplay);
+            } else {
+                skeletonDisplay.classList.remove('show');
+            }
+        }
+        
+        function showSkeletonSentence(container) {
+            const skeletonHtml = `
+                <span class="skeleton-word subject-skeleton" style="--delay: 0.2s">Scientists</span>
+                <span class="skeleton-word verb-skeleton" style="--delay: 0.5s">discovered</span>
+                <span class="skeleton-word object-skeleton" style="--delay: 0.8s">method</span>
+            `;
+            
+            container.innerHTML = skeletonHtml;
+            container.classList.add('show');
+        }
+        
+        function nextStage() {
+            if (currentStage < 3) {
+                updateStage(currentStage + 1);
+            }
+        }
+        
+        function previousStage() {
+            if (currentStage > 0) {
+                updateStage(currentStage - 1);
+            }
+        }
+        
+        function autoPlay() {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+                return;
+            }
+            
+            updateStage(0);
+            autoPlayInterval = setInterval(() => {
+                if (currentStage < 3) {
+                    nextStage();
+                } else {
+                    clearInterval(autoPlayInterval);
+                    autoPlayInterval = null;
+                }
+            }, 2500);
+        }
+    </script>
+</body>
+</html>

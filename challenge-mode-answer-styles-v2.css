@@ -1,0 +1,630 @@
+/* ============ 增强的渐进式答案展示样式 V2 ============ */
+
+/* 主容器 */
+.progressive-answer-display {
+    margin-top: 30px;
+    padding: 30px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+}
+
+.display-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.display-header h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.pattern-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.pattern-info .pattern-badge {
+    background: #5B21B6;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.skeleton-info {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* 句子展示容器 */
+.sentence-display-container {
+    margin-bottom: 30px;
+}
+
+/* 渐进展示句子 */
+.sentence-display.progressive-display {
+    font-size: 28px;
+    line-height: 2;
+    text-align: center;
+    padding: 40px 20px;
+    background: #fafafa;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 基础过渡效果 - 所有单词都有过渡 */
+.progressive-display .word-token {
+    transition: all 0.8s ease;
+    position: relative;
+    display: inline-block;
+    margin: 0 2px;
+}
+
+/* 标点符号样式 */
+.word-token .punctuation {
+    margin-left: -2px;
+}
+
+/* 阶段0：全部淡化 */
+.stage-0 .word-token {
+    color: #ccc;
+    opacity: 0.4;
+}
+
+/* 阶段1：主干高亮 */
+.stage-1 .word-token {
+    color: #ddd;
+    opacity: 0.3;
+}
+
+.stage-1 .word-token.core {
+    color: #333;
+    opacity: 1;
+    font-weight: 600;
+    position: relative;
+    padding: 4px 12px;
+}
+
+/* 红圈效果 - 更流畅的动画 */
+.stage-1 .word-token.core::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+    border: 3px solid #ff4444;
+    border-radius: 24px;
+    opacity: 0;
+    animation: circleAppear 0.8s ease forwards;
+    animation-delay: 0.3s;
+    z-index: -1;
+}
+
+@keyframes circleAppear {
+    0% {
+        opacity: 0;
+        transform: scale(1.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+/* 阶段2：显示定语从句 */
+.stage-2 .word-token.non-core {
+    color: #ddd;
+    opacity: 0.3;
+}
+
+.stage-2 .word-token.core {
+    color: #333;
+    opacity: 1;
+    font-weight: 600;
+}
+
+/* 从句样式 */
+.stage-2 .word-token.in-clause {
+    opacity: 0.9;
+    color: #ff6b35 !important;
+    font-weight: normal;
+    background: rgba(255, 107, 53, 0.08);
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin: 0 1px;
+}
+
+/* 定语从句特殊样式 */
+.stage-2 .word-token.relative-clause {
+    background: rgba(255, 107, 53, 0.12);
+    box-shadow: 0 2px 0 rgba(255, 107, 53, 0.3);
+}
+
+/* 从句下划线动画 */
+.stage-2 .word-token.in-clause::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #ff6b35;
+    animation: underlineSlide 1.2s ease-out;
+}
+
+/* 阶段3：显示状语 */
+.stage-3 .word-token.adverb {
+    opacity: 0.8;
+    color: #7b1fa2;
+    font-weight: 500;
+}
+
+/* 不同类型的状语 */
+.stage-3 .word-token.adverb.time {
+    color: #7b1fa2;
+    background: rgba(123, 31, 162, 0.08);
+}
+
+.stage-3 .word-token.adverb.place {
+    color: #00796b;
+    background: rgba(0, 121, 107, 0.08);
+}
+
+.stage-3 .word-token.adverb.manner {
+    color: #5d4037;
+    background: rgba(93, 64, 55, 0.08);
+}
+
+.stage-3 .word-token.adverb::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: currentColor;
+    animation: underlineSlide 1.0s ease-out;
+}
+
+/* 阶段4：完整展示 */
+.stage-4 .word-token {
+    opacity: 1;
+}
+
+.stage-4 .word-token.subject { 
+    color: #d32f2f;
+    font-weight: 600;
+}
+
+.stage-4 .word-token.verb { 
+    color: #1976d2;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    font-weight: 600;
+}
+
+.stage-4 .word-token.object { 
+    color: #388e3c;
+    font-weight: 600;
+}
+
+.stage-4 .word-token.complement {
+    color: #f57c00;
+    font-weight: 600;
+}
+
+.stage-4 .word-token.indirectObject {
+    color: #00796b;
+    font-weight: 600;
+}
+
+.stage-4 .word-token.adverb { 
+    color: #7b1fa2;
+}
+
+/* 核心词保持红圈 */
+.stage-4 .word-token.core::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+    border: 2px solid #ff4444;
+    border-radius: 24px;
+    opacity: 0.5;
+    z-index: -1;
+}
+
+/* 从句在阶段4保持特殊样式 */
+.stage-4 .word-token.in-clause { 
+    background: rgba(255, 107, 53, 0.05);
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-style: normal;
+    font-weight: normal;
+}
+
+/* 下划线动画 */
+@keyframes underlineSlide {
+    0% {
+        transform: scaleX(0);
+        transform-origin: left;
+    }
+    50% {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
+    100% {
+        transform: scaleX(1);
+    }
+}
+
+/* 阶段指示器 */
+.stage-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 30px 0;
+    font-size: 14px;
+}
+
+.stage-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.4;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 20px;
+}
+
+.stage-item:hover {
+    background: #f3f4f6;
+}
+
+.stage-item.active {
+    opacity: 1;
+    background: rgba(91, 33, 182, 0.08);
+}
+
+.stage-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all 0.3s ease;
+}
+
+.stage-item.active .stage-dot {
+    background: #5B21B6;
+    transform: scale(1.3);
+    box-shadow: 0 0 0 4px rgba(91, 33, 182, 0.2);
+}
+
+/* 说明文字 */
+.stage-explanation {
+    text-align: center;
+    color: #4b5563;
+    font-size: 18px;
+    margin: 30px 0;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    line-height: 1.6;
+}
+
+/* 对比统计 */
+.comparison-stats {
+    margin-top: 12px;
+    font-size: 16px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.stat-correct {
+    color: #059669;
+    font-weight: 600;
+}
+
+.stat-wrong {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.stat-missed {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+/* 骨架句展示 */
+.skeleton-display {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 600;
+    margin: 30px 0;
+    padding: 30px;
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border-radius: 12px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.5s ease;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    min-height: 100px;
+    align-items: center;
+    border: 2px solid #ffb74d;
+}
+
+.skeleton-display.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.skeleton-word {
+    display: inline-block;
+    padding: 12px 24px;
+    background: white;
+    border: 3px solid #ff4444;
+    border-radius: 24px;
+    color: #333;
+    animation: popIn 0.4s ease forwards;
+    animation-delay: var(--delay);
+    opacity: 0;
+    font-size: 22px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* 不同成分的骨架词样式 */
+.skeleton-word.subject-skeleton {
+    border-color: #d32f2f;
+    color: #d32f2f;
+    background: rgba(211, 47, 47, 0.05);
+}
+
+.skeleton-word.verb-skeleton {
+    border-color: #1976d2;
+    color: #1976d2;
+    background: rgba(25, 118, 210, 0.05);
+}
+
+.skeleton-word.object-skeleton {
+    border-color: #388e3c;
+    color: #388e3c;
+    background: rgba(56, 142, 60, 0.05);
+}
+
+.skeleton-word.complement-skeleton {
+    border-color: #f57c00;
+    color: #f57c00;
+    background: rgba(245, 124, 0, 0.05);
+}
+
+.skeleton-word.indirectObject-skeleton {
+    border-color: #00796b;
+    color: #00796b;
+    background: rgba(0, 121, 107, 0.05);
+}
+
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.6) translateY(20px);
+    }
+    50% {
+        transform: scale(1.1) translateY(-5px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* 控制按钮 */
+.controls-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin: 30px 0;
+}
+
+.control-btn {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #5B21B6;
+    color: white;
+    box-shadow: 0 2px 8px rgba(91, 33, 182, 0.2);
+}
+
+.control-btn:hover {
+    background: #4c1d95;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(91, 33, 182, 0.3);
+}
+
+.control-btn.secondary {
+    background: #e5e7eb;
+    color: #374151;
+    box-shadow: none;
+}
+
+.control-btn.secondary:hover {
+    background: #d1d5db;
+}
+
+/* 用户答案对比 - 阶段4显示 */
+.stage-4 .word-token.user-correct {
+    background: rgba(76, 175, 80, 0.2);
+    box-shadow: 0 3px 0 #4caf50;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.stage-4 .word-token.user-wrong {
+    background: rgba(244, 67, 54, 0.2);
+    text-decoration: line-through;
+    text-decoration-color: #f44336;
+    text-decoration-thickness: 2px;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.stage-4 .word-token.user-missed {
+    background: rgba(255, 152, 0, 0.2);
+    border-bottom: 3px dashed #ff9800;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+/* 答案对比图例 */
+.answer-legend {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    font-size: 15px;
+}
+
+.answer-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.answer-legend-box {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+}
+
+.answer-legend-box.correct {
+    background: rgba(76, 175, 80, 0.2);
+    border: 2px solid #4caf50;
+}
+
+.answer-legend-box.wrong {
+    background: rgba(244, 67, 54, 0.2);
+    border: 2px solid #f44336;
+}
+
+.answer-legend-box.missed {
+    background: rgba(255, 152, 0, 0.2);
+    border: 2px solid #ff9800;
+}
+
+/* 键盘提示 */
+.keyboard-hint {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+    margin-top: 16px;
+    padding: 12px;
+    background: #f3f4f6;
+    border-radius: 8px;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .progressive-answer-display {
+        padding: 20px;
+    }
+    
+    .sentence-display.progressive-display {
+        font-size: 20px;
+        padding: 20px 10px;
+    }
+    
+    .stage-indicator {
+        gap: 15px;
+        font-size: 12px;
+    }
+    
+    .stage-item {
+        padding: 6px 10px;
+    }
+    
+    .stage-dot {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .skeleton-display {
+        font-size: 18px;
+        padding: 20px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .skeleton-word {
+        font-size: 16px;
+        padding: 8px 16px;
+    }
+    
+    .controls-buttons {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .control-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    .answer-legend {
+        gap: 15px;
+        font-size: 13px;
+    }
+}
+
+/* 过渡动画优化 */
+.progressive-display * {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 加载动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.progressive-answer-display {
+    animation: fadeIn 0.5s ease;
+}

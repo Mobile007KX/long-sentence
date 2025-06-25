@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>测试ChallengeMode加载 - 修复版</title>
+</head>
+<body>
+    <h1>测试ChallengeMode加载</h1>
+    <div id="result"></div>
+    
+    <script>
+        // 创建一个模拟的 aiAssistant 对象
+        const aiAssistant = {
+            sendRequest: async function(messages) {
+                console.log('Mock AI request:', messages);
+                return { success: true, content: 'Mock response' };
+            }
+        };
+    </script>
+    <script src="challenge-mode.js"></script>
+    <script>
+        const resultDiv = document.getElementById('result');
+        
+        try {
+            if (typeof ChallengeMode === 'undefined') {
+                resultDiv.innerHTML = '<p style="color:red;">ChallengeMode未定义</p>';
+            } else {
+                const challengeMode = new ChallengeMode();
+                resultDiv.innerHTML = '<p style="color:green;">ChallengeMode加载成功！</p>';
+                console.log('ChallengeMode实例:', challengeMode);
+            }
+        } catch (error) {
+            resultDiv.innerHTML = `<p style="color:red;">错误: ${error.message}</p>`;
+            console.error('加载错误:', error);
+        }
+    </script>
+</body>
+</html>

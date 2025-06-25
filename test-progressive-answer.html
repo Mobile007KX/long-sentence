@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>挑战模式测试 - 渐进式答案展示</title>
+    <link rel="stylesheet" href="challenge-mode-optimized.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        /* 覆盖一些样式以适配测试 */
+        .challenge-mode-container {
+            display: block !important;
+        }
+        
+        .challenge-selection,
+        .challenge-summary {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 挑战模式 - 渐进式答案展示测试</h1>
+        
+        <div class="challenge-mode-container">
+            <!-- 难度选择 -->
+            <div class="challenge-selection">
+                <h2>选择挑战难度</h2>
+                <div class="difficulty-selector">
+                    <button class="difficulty-btn" data-difficulty="easy">
+                        <div class="difficulty-name">简单</div>
+                        <div class="difficulty-desc">基础句型，15-20个单词</div>
+                        <div class="difficulty-time">⏱ 30秒</div>
+                    </button>
+                    <button class="difficulty-btn active" data-difficulty="medium">
+                        <div class="difficulty-name">中等</div>
+                        <div class="difficulty-desc">复合句型，20-30个单词</div>
+                        <div class="difficulty-time">⏱ 25秒</div>
+                    </button>
+                    <button class="difficulty-btn" data-difficulty="hard">
+                        <div class="difficulty-name">困难</div>
+                        <div class="difficulty-desc">复杂句型，30-40个单词</div>
+                        <div class="difficulty-time">⏱ 20秒</div>
+                    </button>
+                    <button class="difficulty-btn" data-difficulty="expert">
+                        <div class="difficulty-name">专家</div>
+                        <div class="difficulty-desc">学术级别，40+单词</div>
+                        <div class="difficulty-time">⏱ 15秒</div>
+                    </button>
+                </div>
+                
+                <div class="count-selector">
+                    <label>挑战题数：</label>
+                    <button class="count-option" data-count="1">1题</button>
+                    <button class="count-option active" data-count="3">3题</button>
+                    <button class="count-option" data-count="5">5题</button>
+                    <button class="count-option" data-count="10">10题</button>
+                </div>
+                
+                <button class="start-challenge-btn">开始挑战</button>
+            </div>
+            
+            <!-- 挑战界面 -->
+            <div class="challenge-game" style="display: block;">
+                <div class="challenge-header">
+                    <div class="challenge-progress">题目 1 / 1</div>
+                    <div class="timer">
+                        <div class="timer-circle">
+                            <svg width="50" height="50">
+                                <circle cx="25" cy="25" r="20" fill="none" stroke="#e0e0e0" stroke-width="3"/>
+                                <circle class="timer-arc" cx="25" cy="25" r="20" fill="none" stroke="#4CAF50" stroke-width="3"
+                                        stroke-dasharray="125.66" stroke-dashoffset="0"
+                                        transform="rotate(-90 25 25)"/>
+                            </svg>
+                            <div class="timer-text">10</div>
+                        </div>
+                    </div>
+                    <div class="score-display">得分: 95</div>
+                </div>
+                
+                <div class="challenge-content">
+                    <div class="instructions">标记出句子的主干成分（主语、谓语、宾语/补语）</div>
+                    
+                    <div class="sentence-display">
+                        <span class="word-token selected" data-word="Scientists" data-index="0">Scientists</span>
+                        <span class="word-token" data-word="from" data-index="1">from</span>
+                        <span class="word-token" data-word="various" data-index="2">various</span>
+                        <span class="word-token" data-word="countries" data-index="3">countries</span>
+                        <span class="word-token selected" data-word="have" data-index="4">have</span>
+                        <span class="word-token selected" data-word="discovered" data-index="5">discovered</span>
+                        <span class="word-token" data-word="a" data-index="6">a</span>
+                        <span class="word-token selected" data-word="method" data-index="7">method</span>
+                        <span class="word-token" data-word="to" data-index="8">to</span>
+                        <span class="word-token" data-word="reduce" data-index="9">reduce</span>
+                        <span class="word-token" data-word="carbon" data-index="10">carbon</span>
+                        <span class="word-token" data-word="emissions" data-index="11">emissions</span>
+                        <span class="word-token" data-word="significantly" data-index="12">significantly</span>
+                        <span class="word-token" data-word="." data-index="13">.</span>
+                    </div>
+                    
+                    <div class="challenge-actions">
+                        <button class="submit-btn">提交答案</button>
+                        <button class="clear-btn">清除选择</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 总结界面 -->
+            <div class="challenge-summary">
+                <!-- 总结内容 -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="challenge-mode.js"></script>
+    <script src="ai-assistant-final.js"></script>
+    <script>
+        // 初始化挑战模式
+        const challengeMode = new ChallengeMode();
+        
+        console.log('ChallengeMode initialized:', challengeMode);
+        
+        // 添加错误处理
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Error: ', msg, '\nURL: ', url, '\nLine: ', lineNo);
+            return false;
+        };
+        
+        // 模拟挑战完成，直接显示答案
+        setTimeout(() => {
+            console.log('Starting test...');
+            
+            // 设置测试数据
+            challengeMode.currentChallenge = {
+                sentence: "Scientists from various countries have discovered a method to reduce carbon emissions significantly.",
+                pattern: "SVO",
+                components: {
+                    subject: "Scientists",
+                    verb: "have discovered",
+                    object: "method"
+                },
+                explanation: "这是一个典型的SVO结构"
+            };
+            
+            // 设置选中的tokens
+            challengeMode.selectedTokens = new Set([0, 4, 5, 7]);
+            
+            console.log('Challenge data set:', challengeMode.currentChallenge);
+            
+            // 计算结果
+            const result = challengeMode.calculateResult();
+            console.log('Result calculated:', result);
+            
+            // 显示结果
+            challengeMode.showResult(result);
+            console.log('Result displayed');
+        }, 1000);
+    </script>
+</body>
+</html>

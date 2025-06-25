@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>测试评分机制</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-case {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .sentence {
+            font-size: 18px;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .word {
+            display: inline-block;
+            padding: 2px 6px;
+            margin: 2px;
+            background: #eee;
+            border-radius: 3px;
+        }
+        .selected {
+            background: #3b82f6;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>测试评分机制</h1>
+    
+    <div class="test-case">
+        <h3>测试用例 1：助动词可选</h3>
+        <div class="sentence">
+            句子：Scientists <span class="word">have</span> <span class="word">been</span> <span class="word">developing</span> new technologies.
+        </div>
+        <p>正确答案：</p>
+        <ul>
+            <li>主语：Scientists</li>
+            <li>谓语：have been developing（完整）</li>
+            <li>宾语：technologies</li>
+        </ul>
+        
+        <button onclick="testCase1()">测试只选主要动词</button>
+        <button onclick="testCase2()">测试选完整动词</button>
+        <div id="result1" class="result"></div>
+    </div>
+
+    <script src="challenge-mode.js"></script>
+    <script>
+        // 创建测试数据
+        const testChallenge = {
+            sentence: "Scientists have been developing new technologies.",
+            pattern: "SVO",
+            skeleton: "Scientists have been developing technologies",
+            components: {
+                subject: "Scientists",
+                verb: "have been developing",
+                object: "technologies"
+            },
+            difficulty: "medium",
+            timeLimit: 20,
+            maxScore: 140
+        };
+        
+        // 测试只选主要动词
+        function testCase1() {
+            challengeMode.currentChallenge = testChallenge;
+            challengeMode.timeLeft = 10;
+            
+            const selectedWords = ['Scientists', 'developing', 'technologies'];
+            const result = challengeMode.calculateScore(selectedWords);
+            
+            document.getElementById('result1').innerHTML = `
+                <h4>只选主要动词的结果：</h4>
+                <p>选择的词：${selectedWords.join(', ')}</p>
+                <p>得分：${result.score}分</p>
+                <p>准确率：${result.accuracy}%</p>
+                <p>精确率：${result.precision}%</p>
+                <p>时间奖励：${result.timeBonus}分</p>
+                <p>正确：${result.correct}个，错误：${result.incorrect}个，遗漏：${result.missing}个</p>
+            `;
+        }
+        
+        // 测试选完整动词
+        function testCase2() {
+            challengeMode.currentChallenge = testChallenge;
+            challengeMode.timeLeft = 10;
+            
+            const selectedWords = ['Scientists', 'have', 'been', 'developing', 'technologies'];
+            const result = challengeMode.calculateScore(selectedWords);
+            
+            document.getElementById('result1').innerHTML = `
+                <h4>选完整动词的结果：</h4>
+                <p>选择的词：${selectedWords.join(', ')}</p>
+                <p>得分：${result.score}分</p>
+                <p>准确率：${result.accuracy}%</p>
+                <p>精确率：${result.precision}%</p>
+                <p>时间奖励：${result.timeBonus}分</p>
+                <p>正确：${result.correct}个，错误：${result.incorrect}个，遗漏：${result.missing}个</p>
+            `;
+        }
+    </script>
+</body>
+</html>

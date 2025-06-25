@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>测试渐进式答案展示V2</title>
+    <link rel="stylesheet" href="challenge-mode-optimized.css">
+    <link rel="stylesheet" href="challenge-mode-answer-styles-v2.css">
+    <style>
+        body {
+            font-family: -apple-system, 'Segoe UI', 'PingFang SC', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f7fa;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1d1d1f;
+            margin-bottom: 40px;
+        }
+        
+        .test-controls {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .test-btn {
+            padding: 12px 24px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #5B21B6;
+            color: white;
+        }
+        
+        .test-btn:hover {
+            background: #4c1d95;
+            transform: translateY(-1px);
+        }
+        
+        #display-container {
+            min-height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>渐进式答案展示 V2 测试</h1>
+        
+        <div class="test-controls">
+            <button class="test-btn" onclick="testSimpleSentence()">测试简单句</button>
+            <button class="test-btn" onclick="testComplexSentence()">测试复杂句</button>
+            <button class="test-btn" onclick="testExpertSentence()">测试专家句</button>
+        </div>
+        
+        <div id="display-container"></div>
+    </div>
+
+    <script src="challenge-mode-answer-display-v2.js"></script>
+    <script>
+        // 测试数据
+        const testChallenges = {
+            simple: {
+                sentence: "The happy children are playing games in the park.",
+                pattern: "SVO",
+                skeleton: "children are playing games",
+                components: {
+                    subject: "children",
+                    verb: "are playing",
+                    object: "games"
+                }
+            },
+            complex: {
+                sentence: "The researchers who had been studying climate change finally published their groundbreaking findings yesterday.",
+                pattern: "SVO",
+                skeleton: "researchers published findings",
+                components: {
+                    subject: "researchers",
+                    verb: "published",
+                    object: "findings"
+                }
+            },
+            expert: {
+                sentence: "Despite the challenging circumstances, the dedicated scientists who had been working tirelessly on quantum computing have successfully developed a revolutionary algorithm that promises to transform the industry.",
+                pattern: "SVO",
+                skeleton: "scientists have developed algorithm",
+                components: {
+                    subject: "scientists",
+                    verb: "have developed",
+                    object: "algorithm"
+                }
+            }
+        };
+        
+        // 模拟用户选择
+        const userSelections = {
+            simple: new Set([1, 3, 4, 5]), // 选中了 happy(错), children(对), are playing(对), games(对)
+            complex: new Set([0, 1, 8, 9, 10]), // 部分正确
+            expert: new Set([5, 14, 15, 16, 17]) // 部分正确
+        };
+        
+        function testSimpleSentence() {
+            const container = document.getElementById('display-container');
+            container.innerHTML = '';
+            
+            progressiveAnswerDisplayV2.showCorrectAnswerEnhanced(
+                testChallenges.simple,
+                userSelections.simple,
+                container
+            );
+        }
+        
+        function testComplexSentence() {
+            const container = document.getElementById('display-container');
+            container.innerHTML = '';
+            
+            progressiveAnswerDisplayV2.showCorrectAnswerEnhanced(
+                testChallenges.complex,
+                userSelections.complex,
+                container
+            );
+        }
+        
+        function testExpertSentence() {
+            const container = document.getElementById('display-container');
+            container.innerHTML = '';
+            
+            progressiveAnswerDisplayV2.showCorrectAnswerEnhanced(
+                testChallenges.expert,
+                userSelections.expert,
+                container
+            );
+        }
+        
+        // 自动测试第一个
+        window.onload = () => {
+            testComplexSentence();
+        };
+    </script>
+</body>
+</html>

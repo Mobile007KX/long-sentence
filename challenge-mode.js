@@ -420,13 +420,13 @@ class ChallengeMode {
      * 调用AI API
      */
     async callAI(prompt) {
-        // 使用全局的 AIAssistant 对象
-        if (typeof AIAssistant !== 'undefined' && AIAssistant.sendRequest) {
+        // 使用全局的 aiAssistant 对象
+        if (typeof aiAssistant !== 'undefined' && aiAssistant.sendRequest) {
             try {
                 const messages = [
                     { role: "user", content: prompt }
                 ];
-                const data = await AIAssistant.sendRequest(messages);
+                const data = await aiAssistant.sendRequest(messages);
                 
                 // 添加调试日志
                 console.log('AI Response:', data);
@@ -523,6 +523,14 @@ class ChallengeMode {
         // 渲染挑战界面
         this.renderChallenge(container);
         
+        // 绑定事件处理器到window，确保全局可访问
+        window.challengeModeHandlers = {
+            checkAnswer: () => this.checkAnswer(),
+            resetSelection: () => this.resetSelection(),
+            showAnswer: () => this.showAnswer(),
+            nextChallenge: () => this.nextChallenge()
+        };
+        
         // 启动倒计时
         this.startTimer();
     }
@@ -554,7 +562,7 @@ class ChallengeMode {
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-exit" onclick="challengeMode.exitChallenge()">
+                    <button class="btn-exit" onclick="if(window.challengeMode) window.challengeMode.exitChallenge()">
                         退出挑战
                     </button>
                     <div class="score-display">
@@ -576,13 +584,13 @@ class ChallengeMode {
             </div>
             
             <div class="challenge-actions">
-                <button class="btn-check" onclick="challengeMode.checkAnswer()">
+                <button class="btn-check" onclick="window.challengeModeHandlers.checkAnswer()">
                     检查答案
                 </button>
-                <button class="btn-reset" onclick="challengeMode.resetSelection()">
+                <button class="btn-reset" onclick="window.challengeModeHandlers.resetSelection()">
                     重置选择
                 </button>
-                <button class="btn-give-up" onclick="challengeMode.showAnswer()">
+                <button class="btn-give-up" onclick="window.challengeModeHandlers.showAnswer()">
                     放弃（显示答案）
                 </button>
             </div>
@@ -974,7 +982,7 @@ class ChallengeMode {
         // 在操作按钮区域显示结果
         const actionsDiv = document.querySelector('.challenge-actions');
         actionsDiv.innerHTML = statsHtml + `
-            <button class="btn-next-challenge btn-primary" onclick="challengeMode.nextChallenge()">
+            <button class="btn-next-challenge btn-primary" onclick="window.challengeModeHandlers.nextChallenge()">
                 下一题 →
             </button>
         `;
@@ -1045,69 +1053,227 @@ class ChallengeMode {
     }
 
     /**
-     * 在句子上显示正确答案
+     * 在句子上显示正确答案 - 使用新的渐进式展示
      */
     showCorrectAnswerOnSentence() {
-        const words = document.querySelectorAll('.word-token');
+        // 创建答案展示容器
+        const resultContainer = document.createElement('div');
+        resultContainer.id = 'challenge-answer-display';
+        
+        // 将容器插入到句子下方
+        const sentenceContainer = document.getElementById('challenge-sentence');
+        sentenceContainer.parentNode.insertBefore(resultContainer, sentenceContainer.nextSibling);
+        
+        // 隐藏原句子（保留数据）
+        sentenceContainer.style.display = 'none';
+        
+        // 使用新的渐进式答案展示
+        if (typeof progressiveAnswerDisplayV2 !== 'undefined') {
+            progressiveAnswerDisplayV2.showCorrectAnswerEnhanced(
+                this.currentChallenge, 
+                this.selectedTokens,
+                resultContainer
+            );
+        } else {
+            console.error('Progressive Answer Display V2 not loaded');
+            // 降级到简单显示
+            this.showSimpleAnswer(resultContainer);
+        }
+    }
+    
+    /**
+     * 简单答案显示（降级方案）
+     */
+    showSimpleAnswer(container) {
+        const markedSentence = this.currentChallenge.markedSentence;
+        container.innerHTML = `
+            <div class="simple-answer-display">
+                <h3>正确答案</h3>
+                <div class="marked-sentence">
+                    ${markedSentence}
+                </div>
+                <div class="color-legend">
+                    <span class="legend-item"><span class="color-box subject"></span>主语</span>
+                    <span class="legend-item"><span class="color-box verb"></span>谓语</span>
+                    <span class="legend-item"><span class="color-box object"></span>宾语</span>
+                    <span class="legend-item"><span class="color-box complement"></span>补语</span>
+                </div>
+            </div>
+        `;
+    }
+    
+    /* 注释掉旧的渐进式展示方法，使用新版本
+    createWordComponentMapping(words, components) { ... }
+    initProgressiveDisplay(words, mapping) { ... }
+    createDisplayControls() { ... }
+    startProgressiveDisplay() { ... }
+    updateProgressiveStage(stage) { ... }
+    */
+                token.classList.add('user-missed');
+            }
+        });
+        
+        // 保存映射供后续使用
+        this.wordMapping = mapping;
+        this.currentStage = 0;
+    }
+    
+    /**
+     * 创建展示控制面板
+     */
+    createDisplayControls() {
+        const controlsHtml = `
+            <div class="progressive-controls">
+                <div class="stage-indicator">
+                    <div class="stage-item active" data-stage="0">
+                        <div class="stage-dot"></div>
+                        <span>原句</span>
+                    </div>
+                    <div class="stage-item" data-stage="1">
+                        <div class="stage-dot"></div>
+                        <span>主干</span>
+                    </div>
+                    <div class="stage-item" data-stage="2">
+                        <div class="stage-dot"></div>
+                        <span>骨架句</span>
+                    </div>
+                    <div class="stage-item" data-stage="3">
+                        <div class="stage-dot"></div>
+                        <span>完整</span>
+                    </div>
+                </div>
+                
+                <div class="skeleton-display" id="skeletonDisplay"></div>
+                
+                <div class="controls-buttons">
+                    <button class="control-btn" onclick="challengeMode.previousStage()">← 上一步</button>
+                    <button class="control-btn" onclick="challengeMode.nextStage()">下一步 →</button>
+                    <button class="control-btn secondary" onclick="challengeMode.autoPlay()">自动播放</button>
+                </div>
+            </div>
+        `;
+        
+        // 在句子展示区域后插入控制面板
+        const sentenceDisplay = document.querySelector('.sentence-display');
+        sentenceDisplay.insertAdjacentHTML('afterend', controlsHtml);
+    }
+    
+    /**
+     * 开始渐进展示
+     */
+    startProgressiveDisplay() {
+        // 自动开始播放
+        this.autoPlayInterval = null;
+        setTimeout(() => {
+            this.autoPlay();
+        }, 500);
+    }
+    
+    /**
+     * 切换到下一阶段
+     */
+    nextStage() {
+        if (this.currentStage < 3) {
+            this.updateStage(this.currentStage + 1);
+        }
+    }
+    
+    /**
+     * 切换到上一阶段
+     */
+    previousStage() {
+        if (this.currentStage > 0) {
+            this.updateStage(this.currentStage - 1);
+        }
+    }
+    
+    /**
+     * 更新展示阶段
+     */
+    updateStage(stage) {
+        this.currentStage = stage;
+        const sentenceElement = document.querySelector('.sentence-display');
+        const skeletonDisplay = document.getElementById('skeletonDisplay');
+        
+        // 更新句子显示类
+        sentenceElement.className = `sentence-display progressive-display stage-${stage}`;
+        
+        // 更新阶段指示器
+        document.querySelectorAll('.stage-item').forEach((item, index) => {
+            item.classList.toggle('active', index <= stage);
+        });
+        
+        // 阶段2：显示骨架句
+        if (stage === 2) {
+            this.showSkeletonSentence(skeletonDisplay);
+        } else {
+            skeletonDisplay.classList.remove('show');
+        }
+    }
+    
+    /**
+     * 显示骨架句
+     */
+    showSkeletonSentence(container) {
         const components = this.currentChallenge.components;
+        let skeletonParts = [];
         
-        // 创建一个映射，标记每个单词属于哪个成分
-        const wordComponentMap = new Map();
-        
-        // 处理每个成分
+        // 提取核心词
         if (components.subject) {
-            const subjectWords = components.subject.toLowerCase().split(' ');
-            subjectWords.forEach(word => wordComponentMap.set(word, 'subject'));
+            const subjectWords = components.subject.split(' ');
+            skeletonParts.push({
+                text: subjectWords[0], // 简化：取第一个词
+                type: 'subject'
+            });
         }
         
         if (components.verb) {
-            const verbWords = components.verb.toLowerCase().split(' ');
-            verbWords.forEach(word => wordComponentMap.set(word, 'verb'));
+            skeletonParts.push({
+                text: components.verb.split(' ')[0],
+                type: 'verb'
+            });
         }
         
         if (components.object) {
-            const objectWords = components.object.toLowerCase().split(' ');
-            objectWords.forEach(word => wordComponentMap.set(word, 'object'));
+            const objectWords = components.object.split(' ');
+            skeletonParts.push({
+                text: objectWords[objectWords.length - 1], // 取最后一个词
+                type: 'object'
+            });
+        } else if (components.complement) {
+            skeletonParts.push({
+                text: components.complement.split(' ')[0],
+                type: 'complement'
+            });
         }
         
-        if (components.complement) {
-            const complementWords = components.complement.toLowerCase().split(' ');
-            complementWords.forEach(word => wordComponentMap.set(word, 'complement'));
+        // 渲染骨架句
+        container.innerHTML = skeletonParts.map((part, index) => 
+            `<span class="skeleton-word ${part.type}-skeleton" style="--delay: ${index * 0.3}s">${part.text}</span>`
+        ).join(' ');
+        
+        container.classList.add('show');
+    }
+    
+    /**
+     * 自动播放
+     */
+    autoPlay() {
+        if (this.autoPlayInterval) {
+            clearInterval(this.autoPlayInterval);
+            this.autoPlayInterval = null;
+            return;
         }
         
-        if (components.indirectObject) {
-            const indirectObjectWords = components.indirectObject.toLowerCase().split(' ');
-            indirectObjectWords.forEach(word => wordComponentMap.set(word, 'indirect-object'));
-        }
-        
-        // 应用样式
-        words.forEach(token => {
-            const word = token.dataset.word.toLowerCase();
-            const componentType = wordComponentMap.get(word);
-            
-            if (componentType) {
-                // 是骨干成分
-                token.classList.add('skeleton-word', `${componentType}-word`);
-                
-                // 检查用户是否选中了
-                if (token.classList.contains('selected')) {
-                    token.classList.add('user-correct');
-                } else {
-                    token.classList.add('user-missed');
-                }
+        this.updateStage(0);
+        this.autoPlayInterval = setInterval(() => {
+            if (this.currentStage < 3) {
+                this.nextStage();
             } else {
-                // 修饰语
-                token.classList.add('modifier-word');
-                
-                // 如果用户选中了修饰语，标记为错误
-                if (token.classList.contains('selected')) {
-                    token.classList.add('user-wrong');
-                }
+                clearInterval(this.autoPlayInterval);
+                this.autoPlayInterval = null;
             }
-            
-            // 移除选择状态
-            token.classList.remove('selected', 'selecting');
-        });
+        }, 2500);
     }
 
     /**
@@ -1295,6 +1461,3 @@ class ChallengeMode {
         `;
     }
 }
-
-// 创建全局实例
-const challengeMode = new ChallengeMode();

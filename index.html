@@ -998,7 +998,9 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="challenge-mode.css">
+    <link rel="stylesheet" href="challenge-mode-optimized.css">
+    <link rel="stylesheet" href="challenge-mode-answer-styles-v2.css">
+    <link rel="stylesheet" href="challenge-mode-enhancements.css">
 </head><body>
     <div class="container">
         <!-- Header -->
@@ -1369,7 +1371,28 @@
     <script src="expansion-database.js"></script>
     <script src="ai-assistant.js"></script>
     <script src="challenge-mode.js"></script>
+    <script src="challenge-mode-answer-display-v2.js"></script>
+    <script src="challenge-mode-enhancements.js"></script>
     <script>
+        // 初始化 AI Assistant
+        let aiAssistant;
+        if (typeof AIAssistant !== 'undefined') {
+            aiAssistant = AIAssistant;
+            console.log('AIAssistant initialized successfully');
+        } else {
+            console.error('AIAssistant not found');
+        }
+        
+        // 初始化挑战模式实例
+        let challengeMode;
+        if (typeof ChallengeMode !== 'undefined') {
+            challengeMode = new ChallengeMode();
+            window.challengeMode = challengeMode; // 确保全局可访问
+            console.log('ChallengeMode initialized successfully');
+        } else {
+            console.error('ChallengeMode class not found');
+        }
+        
         // Use extended expansion database if available
         const expansionDatabase = {
             1: [ // SV expansions
@@ -2242,7 +2265,9 @@
                     document.getElementById('progress-fill').style.width = `${((i + 1) / selectedCount) * 100}%`;
                     
                     // 使用AI生成每个题目
-                    const challenge = await challengeMode.generateChallenge(selectedDifficulty);
+                    // const challenge = await challengeMode.generateChallenge(selectedDifficulty);
+                    // 临时使用备用句子进行测试
+                    const challenge = challengeMode.getRandomFallbackChallenge(selectedDifficulty);
                     challenges.push(challenge);
                     
                     // 添加短暂延迟，让动画更流畅
