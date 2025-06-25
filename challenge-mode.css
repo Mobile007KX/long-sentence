@@ -1,0 +1,549 @@
+/* 限时挑战模式样式 */
+
+.challenge-container {
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* 难度选择界面 */
+.challenge-setup {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.challenge-setup h2 {
+    font-size: 28px;
+    color: #1f2937;
+    margin-bottom: 40px;
+}
+
+.difficulty-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.difficulty-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.difficulty-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.difficulty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.difficulty-card h3 {
+    font-size: 20px;
+    color: #1f2937;
+    margin-bottom: 12px;
+}
+
+.difficulty-card p {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 4px 0;
+}
+
+/* 错误消息 */
+.error-message {
+    text-align: center;
+    padding: 40px;
+    color: #dc2626;
+    font-size: 18px;
+}
+
+.error-message button {
+    margin-top: 20px;
+}
+
+/* 挑战头部 */
+.challenge-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.challenge-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.difficulty-badge {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.difficulty-badge.easy {
+    background: #10b981;
+    color: white;
+}
+
+.difficulty-badge.medium {
+    background: #3b82f6;
+    color: white;
+}
+
+.difficulty-badge.hard {
+    background: #f59e0b;
+    color: white;
+}
+
+.difficulty-badge.expert {
+    background: #ef4444;
+    color: white;
+}
+
+.pattern-badge {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    background: #6366f1;
+    color: white;
+}
+
+/* 计时器 */
+.timer-container {
+    position: relative;
+}
+
+.timer-circle {
+    position: relative;
+    width: 60px;
+    height: 60px;
+}
+
+.timer-circle svg {
+    transform: rotate(-90deg);
+}
+
+.timer-bg {
+    fill: none;
+    stroke: #e5e7eb;
+    stroke-width: 4;
+}
+
+.timer-progress {
+    fill: none;
+    stroke: #3b82f6;
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+}
+
+.timer-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.timer-text.warning {
+    color: #ef4444;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+/* 分数显示 */
+.score-display {
+    text-align: center;
+}
+
+.score-label {
+    display: block;
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.score-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* 挑战说明 */
+.challenge-instruction {
+    background: #f3f4f6;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.challenge-instruction p {
+    margin: 4px 0;
+    font-size: 15px;
+    color: #4b5563;
+}
+
+.challenge-instruction strong {
+    color: #1f2937;
+}
+
+.hint {
+    font-size: 14px;
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* 句子显示区域 */
+.challenge-sentence {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    font-size: 20px;
+    line-height: 2;
+    user-select: none;
+    cursor: pointer;
+}
+
+/* 单词标记 */
+.word-token {
+    display: inline-block;
+    padding: 4px 2px;
+    margin: 2px 0;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.word-token:hover {
+    background: #f3f4f6;
+}
+
+.word-token.selected {
+    background: #3b82f6;
+    color: white;
+    padding: 4px 8px;
+}
+
+.word-token.selecting {
+    background: #93c5fd;
+    color: white;
+    padding: 4px 8px;
+}
+
+.word-token.correct-answer {
+    background: #10b981 !important;
+    color: white !important;
+    padding: 4px 8px;
+    animation: highlight 0.5s ease;
+}
+
+.word-token.modifier {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+@keyframes highlight {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.punctuation {
+    margin-left: -2px;
+    color: inherit;
+}
+
+/* 操作按钮 */
+.challenge-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.challenge-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-check {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-check:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-reset {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-reset:hover {
+    background: #4b5563;
+}
+
+.btn-give-up {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-give-up:hover {
+    background: #dc2626;
+}
+
+/* 结果显示 */
+.challenge-result {
+    margin-top: 20px;
+}
+
+.result-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.result-card h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #1f2937;
+}
+
+/* 等级显示 */
+.grade-display {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: 700;
+    color: white;
+}
+
+.grade-S { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+.grade-A { background: linear-gradient(135deg, #34d399, #10b981); }
+.grade-B { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+.grade-C { background: linear-gradient(135deg, #a78bfa, #8b5cf6); }
+
+/* 统计数据 */
+.result-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* 结果详情 */
+.result-details {
+    background: #f3f4f6;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.result-details p {
+    margin: 8px 0;
+    font-size: 16px;
+    color: #4b5563;
+}
+
+/* 最终得分 */
+.final-score {
+    margin: 20px 0;
+}
+
+.score-label {
+    display: block;
+    font-size: 16px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.score-number {
+    display: block;
+    font-size: 48px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* 答案解析 */
+.answer-analysis {
+    background: #f9fafb;
+    padding: 30px;
+    border-radius: 12px;
+    margin-top: 20px;
+    text-align: left;
+}
+
+.answer-analysis h3 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #1f2937;
+}
+
+.answer-analysis h4 {
+    font-size: 16px;
+    margin: 16px 0 8px;
+    color: #374151;
+}
+
+.skeleton-display {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 2px solid #3b82f6;
+}
+
+.skeleton-label {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.skeleton-text {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.components-list {
+    list-style: none;
+    padding: 0;
+}
+
+.components-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.components-list li:last-child {
+    border-bottom: none;
+}
+
+.component-name {
+    font-weight: 600;
+    color: #4b5563;
+    margin-right: 8px;
+}
+
+.pattern-explanation {
+    background: #eff6ff;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: #1e40af;
+}
+
+/* 按钮样式 */
+.btn-show-answer,
+.btn-next-challenge {
+    display: block;
+    width: 200px;
+    margin: 20px auto 0;
+    padding: 12px 24px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-show-answer:hover,
+.btn-next-challenge:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+/* 加载状态 */
+.loading {
+    text-align: center;
+    padding: 60px;
+    font-size: 18px;
+    color: #6b7280;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .challenge-header {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .result-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .challenge-sentence {
+        font-size: 18px;
+        padding: 20px;
+    }
+    
+    .challenge-actions {
+        flex-direction: column;
+    }
+    
+    .challenge-actions button {
+        width: 100%;
+    }
+}

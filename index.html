@@ -979,6 +979,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="challenge-mode.css">
 </head><body>
     <div class="container">
         <!-- Header -->
@@ -999,6 +1000,10 @@
             <button class="tab-button" onclick="switchTab('ai-assistant')">
                 AI 助手
                 <span class="tab-badge" style="background: #ff6b6b;">AI</span>
+            </button>
+            <button class="tab-button" onclick="switchTab('challenge')">
+                限时挑战
+                <span class="tab-badge" style="background: #f59e0b;">挑战</span>
             </button>
             <button class="tab-button" onclick="window.location.href='training-mode.html'">
                 快速训练
@@ -1280,9 +1285,51 @@
             <div id="ai-status" class="ai-status"></div>
         </div>
     </div>
+
+    <!-- Challenge Tab Content -->
+    <div id="challenge-tab" class="tab-content">
+        <div class="challenge-container">
+            <!-- Difficulty Selector -->
+            <div class="challenge-setup">
+                <h2>选择挑战难度</h2>
+                <div class="difficulty-selector">
+                    <div class="difficulty-card" onclick="startChallengeWithDifficulty('easy')">
+                        <div class="difficulty-icon">🌱</div>
+                        <h3>简单</h3>
+                        <p>30秒时间</p>
+                        <p>短句子，简单结构</p>
+                    </div>
+                    <div class="difficulty-card" onclick="startChallengeWithDifficulty('medium')">
+                        <div class="difficulty-icon">🌿</div>
+                        <h3>中等</h3>
+                        <p>20秒时间</p>
+                        <p>中等长度，包含修饰语</p>
+                    </div>
+                    <div class="difficulty-card" onclick="startChallengeWithDifficulty('hard')">
+                        <div class="difficulty-icon">🌳</div>
+                        <h3>困难</h3>
+                        <p>15秒时间</p>
+                        <p>长句子，复杂结构</p>
+                    </div>
+                    <div class="difficulty-card" onclick="startChallengeWithDifficulty('expert')">
+                        <div class="difficulty-icon">🔥</div>
+                        <h3>专家</h3>
+                        <p>10秒时间</p>
+                        <p>超长句子，多重从句</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Challenge Area (hidden initially) -->
+            <div id="challenge-area" style="display: none;">
+                <!-- Dynamic content will be inserted here by challenge-mode.js -->
+            </div>
+        </div>
+    </div>
     <script src="sentence-database.js"></script>
     <script src="expansion-database.js"></script>
     <script src="ai-assistant.js"></script>
+    <script src="challenge-mode.js"></script>
     <script>
         // Use extended expansion database if available
         const expansionDatabase = {
@@ -1396,6 +1443,11 @@
             // Initialize expansion if switching to that tab
             if (tab === 'expansion') {
                 initExpansion();
+            }
+            
+            // Stop any challenge timers when switching tabs
+            if (tab !== 'challenge' && typeof challengeMode !== 'undefined' && challengeMode.timer) {
+                clearInterval(challengeMode.timer);
             }
         }
 
@@ -2080,6 +2132,44 @@
         // Add generated sentence to database (for demo)
         function addToDatabase(pattern, sentence) {
             showAIStatus('句子已添加到练习库！', 'success');
+        }
+
+        // Challenge mode functions
+        async function startChallengeWithDifficulty(difficulty) {
+            // Hide setup, show challenge area
+            document.querySelector('.challenge-setup').style.display = 'none';
+            document.getElementById('challenge-area').style.display = 'block';
+            
+            // Show loading
+            const challengeArea = document.getElementById('challenge-area');
+            challengeArea.innerHTML = '<div class="loading">正在生成挑战句子...</div>';
+            
+            try {
+                // Generate challenge
+                const challenge = await challengeMode.generateChallenge(difficulty);
+                
+                // Start challenge
+                challengeMode.startChallenge(challenge, challengeArea);
+            } catch (error) {
+                console.error('Failed to start challenge:', error);
+                challengeArea.innerHTML = `
+                    <div class="error-message">
+                        生成挑战失败，请重试
+                        <button class="btn btn-primary" onclick="resetChallenge()">返回</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function resetChallenge() {
+            // Reset to difficulty selection
+            document.querySelector('.challenge-setup').style.display = 'block';
+            document.getElementById('challenge-area').style.display = 'none';
+            
+            // Clear any timers
+            if (challengeMode && challengeMode.timer) {
+                clearInterval(challengeMode.timer);
+            }
         }
 
         // Load user performance on startup
