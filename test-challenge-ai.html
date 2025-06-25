@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>测试挑战模式AI生成</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>挑战模式AI生成测试</h1>
+    
+    <div class="test-section">
+        <h2>测试AI生成挑战句子</h2>
+        <button onclick="testGenerateChallenge('easy')">生成简单难度</button>
+        <button onclick="testGenerateChallenge('medium')">生成中等难度</button>
+        <button onclick="testGenerateChallenge('hard')">生成困难难度</button>
+        <div id="result"></div>
+    </div>
+
+    <script src="ai-assistant.js"></script>
+    <script src="challenge-mode.js"></script>
+    <script>
+        // challengeMode 已经在 challenge-mode.js 中声明为全局变量
+        
+        async function testGenerateChallenge(difficulty) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>正在生成...</p>';
+            
+            try {
+                console.log('开始生成挑战，难度：', difficulty);
+                const challenge = await challengeMode.generateChallenge(difficulty);
+                console.log('生成成功：', challenge);
+                
+                resultDiv.innerHTML = `
+                    <h3 class="success">生成成功！</h3>
+                    <pre>${JSON.stringify(challenge, null, 2)}</pre>
+                    <p><strong>句子：</strong>${challenge.sentence}</p>
+                    <p><strong>句型：</strong>${challenge.pattern}</p>
+                    <p><strong>骨干：</strong>${challenge.skeleton}</p>
+                `;
+            } catch (error) {
+                console.error('生成失败：', error);
+                resultDiv.innerHTML = `
+                    <h3 class="error">生成失败</h3>
+                    <p class="error">${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `;
+            }
+        }
+        
+        // 测试AI Assistant是否可用
+        console.log('AI Assistant 是否可用：', typeof AIAssistant !== 'undefined');
+        console.log('sendRequest 方法是否存在：', typeof AIAssistant?.sendRequest === 'function');
+    </script>
+</body>
+</html>

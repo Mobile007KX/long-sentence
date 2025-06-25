@@ -55,29 +55,63 @@ class ChallengeMode {
     async generateChallenge(difficulty = 'medium') {
         const config = this.difficulties[difficulty];
         
+        // 随机选择主题，避免重复
+        const themes = [
+            'science and research',
+            'business and economy',
+            'nature and environment',
+            'technology and innovation',
+            'arts and culture',
+            'sports and fitness',
+            'travel and adventure',
+            'food and cuisine',
+            'history and heritage',
+            'health and medicine'
+        ];
+        
+        const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+        
         // 简化提示词，减少上下文占用
         const prompt = `生成一个${config.name}难度的英语句子，要求：
 - 句型：随机选择SV/SVP/SVO/SVOO/SVOC之一
 - 长度：${this.getSentenceLengthDescription(config.sentenceLength)}
+- 主题：${randomTheme}
 - 包含修饰成分但主干清晰
+- 避免使用teacher/student等教育类词汇
 
-只返回JSON：
+返回格式要求：
+1. sentence: 完整句子
+2. pattern: 句型（SV/SVP/SVO/SVOO/SVOC）
+3. skeleton: 只包含最核心的主干单词，去除所有冠词、形容词、副词等修饰语
+4. components: 只写核心单词，不要修饰语
+
+重要：
+- skeleton应该非常简洁，只有核心词汇
+- components中每个成分只写核心单词，不要the/a/an等
+- 确保生成的句子符合指定主题
+
+示例：
+输入句子："The young students quickly understood the difficult concept yesterday."
+输出：
 {
-  "sentence": "完整句子",
-  "pattern": "句型",
-  "skeleton": "主干（去除修饰语）",
+  "sentence": "The young students quickly understood the difficult concept yesterday.",
+  "pattern": "SVO",
+  "skeleton": "students understood concept",
   "components": {
-    "subject": "主语",
-    "verb": "谓语",
-    "object": "宾语",
-    "complement": "补语",
-    "indirectObject": "间接宾语"
+    "subject": "students",
+    "verb": "understood", 
+    "object": "concept"
   }
-}`;
+}
+
+只返回JSON，不要其他内容。`;
 
         try {
             const response = await this.callAI(prompt);
             const data = JSON.parse(response);
+            
+            // 生成markedSentence
+            data.markedSentence = this.generateMarkedSentence(data);
             
             // 添加挑战配置
             data.difficulty = difficulty;
@@ -90,6 +124,65 @@ class ChallengeMode {
             // 返回备用句子（从扩展的句子库中随机选择）
             return this.getRandomFallbackChallenge(difficulty);
         }
+    }
+
+    /**
+     * 生成标记的句子HTML
+     */
+    generateMarkedSentence(data) {
+        const { sentence, skeleton, components } = data;
+        const words = sentence.split(' ');
+        const skeletonWords = skeleton.toLowerCase().split(' ');
+        
+        // 创建一个映射来标记每个单词的类型
+        const wordTypes = {};
+        
+        // 标记主干成分
+        for (const [key, value] of Object.entries(components)) {
+            if (value) {
+                const componentWords = value.toLowerCase().split(' ');
+                componentWords.forEach(word => {
+                    wordTypes[word] = key;
+                });
+            }
+        }
+        
+        // 生成标记的HTML
+        let markedHTML = words.map((word, index) => {
+            const cleanWord = word.replace(/[.,!?;:]/, '');
+            const punctuation = word.match(/[.,!?;:]/)?.[0] || '';
+            const lowerWord = cleanWord.toLowerCase();
+            
+            // 检查是否是主干成分
+            const isCore = skeletonWords.includes(lowerWord);
+            const componentType = wordTypes[lowerWord];
+            
+            if (isCore && componentType) {
+                let className = 'core';
+                switch(componentType) {
+                    case 'subject':
+                        className = 'subject core';
+                        break;
+                    case 'verb':
+                        className = 'verb core';
+                        break;
+                    case 'object':
+                        className = 'object core';
+                        break;
+                    case 'complement':
+                        className = 'complement core';
+                        break;
+                    case 'indirectObject':
+                        className = 'indirect-object core';
+                        break;
+                }
+                return `<span class='${className}'>${cleanWord}</span>${punctuation}`;
+            } else {
+                return `<span class='non-core'>${cleanWord}</span>${punctuation}`;
+            }
+        }).join(' ');
+        
+        return markedHTML;
     }
 
     /**

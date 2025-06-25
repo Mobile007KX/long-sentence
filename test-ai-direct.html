@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>直接测试AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            background: #f5f5f5;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+        .error {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <h1>直接测试AI调用</h1>
+    
+    <button onclick="testBasicAI()">测试基础AI调用</button>
+    <button onclick="testChallengeGeneration()">测试挑战句子生成</button>
+    
+    <div id="result"></div>
+
+    <script>
+        // 直接定义简单的AI调用
+        const testAI = {
+            apiKey: 'sk-8a9d17f2199449ca87988c5d82ae30be',
+            apiUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions',
+            
+            async callAPI(prompt) {
+                const response = await fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'qwen-turbo-latest',
+                        messages: [
+                            { role: "system", content: "你是一个英语教学助手。" },
+                            { role: "user", content: prompt }
+                        ],
+                        temperature: 0.7
+                    })
+                });
+                
+                return await response.json();
+            }
+        };
+        
+        async function testBasicAI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = '正在测试...';
+            
+            try {
+                const data = await testAI.callAPI('说"Hello World"');
+                resultDiv.className = 'result success';
+                resultDiv.textContent = '成功！\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '错误：' + error.message + '\n' + error.stack;
+            }
+        }
+        
+        async function testChallengeGeneration() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = '正在生成挑战句子...';
+            
+            const prompt = `生成一个中等难度的英语句子用于语法练习。
+
+要求：
+- 句型：随机选择SV/SVP/SVO/SVOO/SVOC之一
+- 长度：15-25个单词
+- 包含修饰成分但主干清晰
+
+返回JSON格式：
+{
+  "sentence": "完整句子",
+  "pattern": "句型",
+  "skeleton": "句子主干",
+  "components": {
+    "subject": "主语",
+    "verb": "谓语",
+    "object": "宾语"
+  }
+}`;
+            
+            try {
+                const data = await testAI.callAPI(prompt);
+                
+                if (data.choices && data.choices[0]) {
+                    const content = data.choices[0].message.content;
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '原始响应：\n' + content + '\n\n';
+                    
+                    // 尝试解析JSON
+                    const jsonMatch = content.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        const parsed = JSON.parse(jsonMatch[0]);
+                        resultDiv.textContent += '解析的JSON：\n' + JSON.stringify(parsed, null, 2);
+                    }
+                } else if (data.error) {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = 'API错误：\n' + JSON.stringify(data.error, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '错误：' + error.message + '\n' + error.stack;
+            }
+        }
+    </script>
+</body>
+</html>

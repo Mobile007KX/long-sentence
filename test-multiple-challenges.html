@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>测试挑战模式生成</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .challenge {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .challenge h3 {
+            margin-top: 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1976d2;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        pre {
+            background: #eee;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>测试挑战模式句子生成</h1>
+    
+    <button onclick="generateMultiple()">生成3个挑战句子</button>
+    <button onclick="clearResults()">清空结果</button>
+    
+    <div id="results"></div>
+
+    <script src="ai-assistant.js"></script>
+    <script src="challenge-mode.js"></script>
+    <script>
+        async function generateMultiple() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>正在生成...</p>';
+            
+            const challenges = [];
+            let html = '';
+            
+            for (let i = 0; i < 3; i++) {
+                html += `<div class="challenge">`;
+                html += `<h3>第 ${i + 1} 题</h3>`;
+                
+                try {
+                    console.log(`生成第 ${i + 1} 题...`);
+                    const challenge = await challengeMode.generateChallenge('medium');
+                    challenges.push(challenge);
+                    
+                    html += `<p class="success">✓ 生成成功</p>`;
+                    html += `<p><strong>句子：</strong>${challenge.sentence}</p>`;
+                    html += `<p><strong>句型：</strong>${challenge.pattern}</p>`;
+                    html += `<p><strong>骨干：</strong>${challenge.skeleton}</p>`;
+                    html += `<details><summary>查看详细信息</summary>`;
+                    html += `<pre>${JSON.stringify(challenge, null, 2)}</pre>`;
+                    html += `</details>`;
+                    
+                } catch (error) {
+                    console.error(`生成第 ${i + 1} 题失败:`, error);
+                    
+                    // 使用备用句子
+                    const fallback = challengeMode.getRandomFallbackChallenge('medium');
+                    challenges.push(fallback);
+                    
+                    html += `<p class="error">✗ AI生成失败，使用备用句子</p>`;
+                    html += `<p><strong>句子：</strong>${fallback.sentence}</p>`;
+                    html += `<p><strong>句型：</strong>${fallback.pattern}</p>`;
+                    html += `<p><strong>骨干：</strong>${fallback.skeleton}</p>`;
+                    html += `<details><summary>查看错误信息</summary>`;
+                    html += `<pre class="error">${error.message}\n${error.stack}</pre>`;
+                    html += `</details>`;
+                }
+                
+                html += `</div>`;
+                
+                // 实时更新显示
+                resultsDiv.innerHTML = html;
+                
+                // 添加短暂延迟
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            // 检查是否有重复的句子
+            const sentences = challenges.map(c => c.sentence);
+            const uniqueSentences = new Set(sentences);
+            
+            if (uniqueSentences.size < sentences.length) {
+                html += `<div class="challenge error">`;
+                html += `<h3>⚠️ 发现重复句子！</h3>`;
+                html += `<p>生成了 ${sentences.length} 个句子，但只有 ${uniqueSentences.size} 个不同的句子。</p>`;
+                html += `</div>`;
+            } else {
+                html += `<div class="challenge success">`;
+                html += `<h3>✓ 所有句子都不相同！</h3>`;
+                html += `</div>`;
+            }
+            
+            resultsDiv.innerHTML = html;
+            
+            console.log('所有挑战：', challenges);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
