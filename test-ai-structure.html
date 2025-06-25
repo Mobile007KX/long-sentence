@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI句子结构测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f7;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1d1d1f;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        select, button {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        button {
+            background: #007aff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0055d4;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        .sentence-display {
+            font-size: 24px;
+            line-height: 1.8;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        .word {
+            display: inline-block;
+            padding: 2px 4px;
+            margin: 2px;
+            border-radius: 4px;
+            position: relative;
+        }
+        .word.subject { background: #e0e7ff; color: #3730a3; }
+        .word.verb { background: #fce7f3; color: #a21caf; }
+        .word.object { background: #d9f99d; color: #3f6212; }
+        .word.complement { background: #fef3c7; color: #92400e; }
+        .word.indirectObject { background: #e0f2fe; color: #075985; }
+        .word-index {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #666;
+        }
+        .structure-info {
+            margin-top: 20px;
+        }
+        .component-row {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+        .comp-label {
+            font-weight: bold;
+            width: 100px;
+            color: #666;
+        }
+        .comp-text {
+            flex: 1;
+            color: #333;
+        }
+        .comp-range {
+            font-family: monospace;
+            color: #007aff;
+            margin-left: 10px;
+        }
+        .error-msg {
+            color: #dc2626;
+            padding: 10px;
+            background: #fee;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .raw-data {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI句子结构解析测试</h1>
+        
+        <div class="test-section">
+            <h2>生成测试句子</h2>
+            <div class="controls">
+                <select id="patternSelect">
+                    <option value="SV">SV - 主谓结构</option>
+                    <option value="SVP">SVP - 主系表结构</option>
+                    <option value="SVO" selected>SVO - 主谓宾结构</option>
+                    <option value="SVOO">SVOO - 主谓双宾结构</option>
+                    <option value="SVOC">SVOC - 主谓宾补结构</option>
+                </select>
+                <select id="difficultySelect">
+                    <option value="1">1星 - 简单</option>
+                    <option value="2">2星 - 较简单</option>
+                    <option value="3" selected>3星 - 中等</option>
+                    <option value="4">4星 - 较难</option>
+                    <option value="5">5星 - 困难</option>
+                </select>
+                <button onclick="generateSentence()">生成句子</button>
+                <button onclick="testExamples()">测试示例句子</button>
+            </div>
+            
+            <div id="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>定语从句边界测试</h2>
+            <button onclick="testRelativeClause()">测试定语从句识别</button>
+            <div id="relativeResult"></div>
+        </div>
+    </div>
+
+    <script src="ai-assistant-v2.js"></script>
+    <script>
+        async function generateSentence() {
+            const pattern = document.getElementById('patternSelect').value;
+            const difficulty = parseInt(document.getElementById('difficultySelect').value);
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '<div class="loading">正在生成句子...</div>';
+            
+            try {
+                const result = await AIAssistantV2.generateSentenceV2(pattern, difficulty);
+                
+                if (result.error) {
+                    resultDiv.innerHTML = `<div class="error-msg">错误：${result.error}</div>`;
+                    return;
+                }
+                
+                displayResult(result, resultDiv);
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error-msg">生成失败：${error.message}</div>`;
+            }
+        }
+
+        function displayResult(data, container) {
+            let html = '<div class="result">';
+            
+            // 显示句子，带索引标记
+            html += '<div class="sentence-display">';
+            data.tokens.forEach((token, index) => {
+                let className = 'word';
+                let componentName = '';
+                
+                // 查找这个词属于哪个成分
+                Object.entries(data.components).forEach(([comp, info]) => {
+                    if (index >= info.range[0] && index <= info.range[1]) {
+                        className += ' ' + comp;
+                        componentName = comp;
+                    }
+                });
+                
+                html += `<span class="${className}">
+                    <span class="word-index">${index}</span>
+                    ${token}
+                </span>`;
+            });
+            html += '</div>';
+            
+            // 显示结构信息
+            html += '<div class="structure-info">';
+            html += '<h3>句子成分分析</h3>';
+            
+            Object.entries(data.components).forEach(([comp, info]) => {
+                const label = {
+                    'subject': '主语',
+                    'verb': '谓语',
+                    'object': '宾语',
+                    'complement': '补语/表语',
+                    'indirectObject': '间接宾语'
+                }[comp] || comp;
+                
+                html += `<div class="component-row">
+                    <span class="comp-label">${label}：</span>
+                    <span class="comp-text">${info.text}</span>
+                    <span class="comp-range">[${info.range[0]}-${info.range[1]}]</span>
+                </div>`;
+            });
+            
+            html += '</div>';
+            
+            // 显示原始数据
+            html += `<div class="raw-data">
+<strong>原始JSON数据：</strong>
+${JSON.stringify(data, null, 2)}
+</div>`;
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        async function testExamples() {
+            const examples = [
+                {
+                    pattern: 'SVO',
+                    sentence: 'The students who studied hard finally passed the difficult exam yesterday.'
+                },
+                {
+                    pattern: 'SVO',
+                    sentence: 'The teacher who explained the lesson clearly helped many students understand.'
+                },
+                {
+                    pattern: 'SVOO',
+                    sentence: 'The manager gave the employees who worked overtime a bonus.'
+                }
+            ];
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<h3>测试预定义句子的解析</h3>';
+            
+            for (const example of examples) {
+                const testResult = await testSentenceParsing(example.sentence, example.pattern);
+                resultDiv.innerHTML += testResult;
+            }
+        }
+
+        async function testSentenceParsing(sentence, pattern) {
+            // 这里可以调用AI来解析句子结构
+            return `<div class="test-case">
+                <p><strong>句子：</strong>${sentence}</p>
+                <p><strong>句型：</strong>${pattern}</p>
+                <p>待实现：调用AI解析并显示结果</p>
+            </div>`;
+        }
+
+        async function testRelativeClause() {
+            const testSentences = [
+                "The book that I bought yesterday is interesting.",
+                "Students who work hard usually succeed.",
+                "The man whom we met at the party is a famous writer.",
+                "The house where they live is very old.",
+                "The reason why she left remains unknown."
+            ];
+            
+            const resultDiv = document.getElementById('relativeResult');
+            resultDiv.innerHTML = '<h3>定语从句边界识别测试</h3>';
+            
+            // 测试每个句子
+            for (const sentence of testSentences) {
+                resultDiv.innerHTML += `<div class="test-case">
+                    <p><strong>测试句子：</strong>${sentence}</p>
+                    <p>分析中...</p>
+                </div>`;
+            }
+        }
+    </script>
+</body>
+</html>

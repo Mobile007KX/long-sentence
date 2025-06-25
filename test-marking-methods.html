@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>AI标记方法测试器</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #252526;
+            border-radius: 8px;
+        }
+        h2 { color: #4ec9b0; }
+        .success { color: #6a9955; }
+        .error { color: #f48771; }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #1e1e1e;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .sentence-preview {
+            font-size: 20px;
+            line-height: 1.8;
+            padding: 20px;
+            background: white;
+            color: black;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .subject { background: #ffebee; color: #c62828; padding: 2px 6px; border-radius: 3px; }
+        .verb { background: #e3f2fd; color: #1565c0; padding: 2px 6px; border-radius: 3px; }
+        .object { background: #e8f5e9; color: #2e7d32; padding: 2px 6px; border-radius: 3px; }
+        .modifier { background: #f3e5f5; color: #6a1b9a; padding: 2px 6px; border-radius: 3px; }
+        .clause { border-bottom: 2px dashed #ff9800; }
+    </style>
+</head>
+<body>
+    <h1>🧪 AI标记方法自动测试器</h1>
+    
+    <div class="test-section">
+        <h2>测试不同的提示词方法</h2>
+        <button onclick="testAllMethods()">开始自动测试</button>
+        <button onclick="clearResults()">清除结果</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_KEY = 'sk-8a9d17f2199449ca87988c5d82ae30be';
+        const API_URL = 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions';
+        
+        // 不同的提示词方法
+        const methods = {
+            // 方法1: 直接示例
+            directExample: {
+                name: "直接示例法",
+                systemPrompt: `生成带HTML标记的英语句子。直接看例子：
+
+输入：生成SVO句子
+输出：<span class="subject">The boy</span> <span class="verb">ate</span> <span class="object">an apple</span>.
+
+输入：生成包含定语从句的SVO句子  
+输出：<span class="subject">The students <span class="clause">who work hard</span></span> <span class="verb">achieve</span> <span class="object">success</span>.
+
+标记规则：
+- 主语用 <span class="subject">
+- 谓语用 <span class="verb">
+- 宾语用 <span class="object">
+- 定语从句用 <span class="clause"> 且要嵌套在被修饰词内
+- 状语用 <span class="modifier">`
+            },
+            
+            // 方法2: 规则说明
+            rulesBased: {
+                name: "规则说明法",
+                systemPrompt: `你是英语句子生成器。生成句子时使用HTML标记。
+
+规则：
+1. 识别句子成分
+2. 用对应的span标签包裹
+3. class属性：subject/verb/object/modifier/clause
+4. 定语从句必须嵌套在它修饰的名词所在的span内
+
+输出JSON格式：
+{
+  "marked": "带标记的句子",
+  "plain": "纯文本句子"
+}`
+            },
+            
+            // 方法3: 分步指导
+            stepByStep: {
+                name: "分步指导法", 
+                systemPrompt: `生成带标记的英语句子。
+
+步骤：
+1. 先写出完整句子
+2. 识别主谓宾等成分
+3. 添加HTML标记：
+   - <span class="subject">主语</span>
+   - <span class="verb">谓语</span>
+   - <span class="object">宾语</span>
+4. 特殊处理：定语从句要嵌套在被修饰词的span内
+
+示例：The man who helped me is kind.
+标记：<span class="subject">The man <span class="clause">who helped me</span></span> <span class="verb">is</span> <span class="object">kind</span>.`
+            },
+            
+            // 方法4: 模板替换
+            template: {
+                name: "模板替换法",
+                systemPrompt: `生成句子并标记成分。使用以下模板：
+
+[主语] [谓语] [宾语]
+
+然后替换为：
+<span class="subject">[主语]</span> <span class="verb">[谓语]</span> <span class="object">[宾语]</span>
+
+如果有定语从句，嵌套处理：
+<span class="subject">[名词] <span class="clause">[定语从句]</span></span>`
+            },
+            
+            // 方法5: 混合方法
+            hybrid: {
+                name: "混合方法",
+                systemPrompt: `生成带HTML标记的英语句子。
+
+核心概念：把句子成分用HTML span标签包裹，class表示成分类型。
+
+示例1: The cat sleeps.
+→ <span class="subject">The cat</span> <span class="verb">sleeps</span>.
+
+示例2: Students who study hard succeed.  
+→ <span class="subject">Students <span class="clause">who study hard</span></span> <span class="verb">succeed</span>.
+
+要求：
+1. 所有成分都要标记
+2. 定语从句嵌套在被修饰词内
+3. 返回JSON: {"marked": "...", "plain": "..."}`
+            }
+        };
+        
+        // 测试句子要求
+        const testRequests = [
+            { pattern: "SVO", desc: "简单SVO句子" },
+            { pattern: "SVO", desc: "包含定语从句的SVO句子" },
+            { pattern: "SVOO", desc: "双宾语句子" },
+            { pattern: "SVO", desc: "包含状语的复杂句子" }
+        ];
+        
+        async function testMethod(methodKey, method) {
+            log(`\n📝 测试方法: ${method.name}`);
+            let successCount = 0;
+            
+            for (const req of testRequests) {
+                try {
+                    const prompt = `生成一个${req.desc}，句型是${req.pattern}。`;
+                    const result = await callAPI(method.systemPrompt, prompt);
+                    
+                    // 检查结果
+                    const validation = validateResult(result, req);
+                    if (validation.valid) {
+                        successCount++;
+                        log(`✅ ${req.desc}: 成功`, 'success');
+                        showPreview(validation.marked);
+                    } else {
+                        log(`❌ ${req.desc}: ${validation.error}`, 'error');
+                        log(`   响应: ${JSON.stringify(result).substring(0, 100)}...`, 'error');
+                    }
+                    
+                } catch (error) {
+                    log(`❌ ${req.desc}: ${error.message}`, 'error');
+                }
+                
+                await sleep(500); // 避免频率限制
+            }
+            
+            const score = (successCount / testRequests.length * 100).toFixed(0);
+            log(`📊 ${method.name} 成功率: ${score}%`);
+            return { method: methodKey, score: parseInt(score) };
+        }
+        
+        async function callAPI(systemPrompt, userPrompt) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'qwen-turbo-latest',
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: userPrompt }
+                    ],
+                    temperature: 0.3,
+                    max_tokens: 500
+                })
+            });
+            
+            const data = await response.json();
+            if (data.choices?.[0]?.message?.content) {
+                const content = data.choices[0].message.content;
+                
+                // 尝试解析JSON
+                try {
+                    return JSON.parse(content);
+                } catch {
+                    // 如果不是JSON，尝试提取标记的句子
+                    if (content.includes('<span')) {
+                        return { marked: content, plain: content.replace(/<[^>]+>/g, '') };
+                    }
+                    return { marked: content };
+                }
+            }
+            throw new Error('API调用失败');
+        }
+        
+        function validateResult(result, requirement) {
+            // 检查是否有标记的句子
+            const marked = result.marked || result.sentence || result.output || '';
+            
+            if (!marked) {
+                return { valid: false, error: '无输出' };
+            }
+            
+            // 检查是否包含HTML标记
+            if (!marked.includes('<span')) {
+                return { valid: false, error: '缺少HTML标记' };
+            }
+            
+            // 检查必要的标记
+            const hasSubject = marked.includes('class="subject"') || marked.includes("class='subject'");
+            const hasVerb = marked.includes('class="verb"') || marked.includes("class='verb'");
+            
+            if (!hasSubject || !hasVerb) {
+                return { valid: false, error: '缺少必要的成分标记' };
+            }
+            
+            // 检查定语从句嵌套（如果要求包含定语从句）
+            if (requirement.desc.includes('定语从句')) {
+                const hasClause = marked.includes('class="clause"') || marked.includes("class='clause'");
+                if (!hasClause) {
+                    return { valid: false, error: '缺少定语从句标记' };
+                }
+                
+                // 简单检查嵌套结构
+                if (!marked.includes('</span></span>')) {
+                    return { valid: false, error: '定语从句未正确嵌套' };
+                }
+            }
+            
+            return { valid: true, marked: marked };
+        }
+        
+        function showPreview(markedSentence) {
+            const preview = document.createElement('div');
+            preview.className = 'sentence-preview';
+            preview.innerHTML = markedSentence;
+            document.getElementById('results').appendChild(preview);
+        }
+        
+        async function testAllMethods() {
+            log('🚀 开始测试所有方法...\n');
+            const scores = [];
+            
+            for (const [key, method] of Object.entries(methods)) {
+                const result = await testMethod(key, method);
+                scores.push(result);
+                log('\n' + '='.repeat(50) + '\n');
+            }
+            
+            // 找出最佳方法
+            const best = scores.reduce((a, b) => a.score > b.score ? a : b);
+            log(`\n🏆 最佳方法: ${methods[best.method].name} (${best.score}%)`);
+            
+            // 显示最佳提示词
+            log('\n📋 最佳提示词内容:');
+            log(methods[best.method].systemPrompt);
+        }
+        
+        function log(message, type = '') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>

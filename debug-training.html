@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Training Mode</title>
+</head>
+<body>
+    <h1>调试训练模式</h1>
+    <button onclick="testAI()">测试AI功能</button>
+    <div id="result"></div>
+
+    <script src="ai-assistant.js"></script>
+    <script src="ai-assistant-v2.js"></script>
+    <script>
+        console.log('AIAssistant:', typeof AIAssistant);
+        console.log('AIAssistantV2:', typeof AIAssistantV2);
+        
+        async function testAI() {
+            const resultDiv = document.getElementById('result');
+            try {
+                resultDiv.innerHTML = '<p>Testing AIAssistantV2.generateSentenceV2...</p>';
+                const result = await AIAssistantV2.generateSentenceV2('SVO', 3, []);
+                resultDiv.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (error) {
+                resultDiv.innerHTML = '<p style="color:red;">Error: ' + error.message + '</p>';
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

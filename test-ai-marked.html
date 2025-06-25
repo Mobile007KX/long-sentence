@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>AI标记句子测试</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f7;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #1d1d1f;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #007aff;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0055d4;
+        }
+        select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        .sentence-display {
+            font-size: 28px;
+            line-height: 2;
+            padding: 40px;
+            margin: 20px 0;
+            background: #f9fafb;
+            border-radius: 12px;
+            min-height: 100px;
+            text-align: center;
+        }
+        
+        /* 现代模式样式 */
+        .modern .subject {
+            background: #ffe0e0;
+            color: #d63031;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .modern .verb {
+            background: #e3f2fd;
+            color: #0984e3;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .modern .object {
+            background: #e8f5e9;
+            color: #00b894;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .modern .complement {
+            background: #fff3e0;
+            color: #f39c12;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .modern .modifier {
+            background: #f3e5f5;
+            color: #9b59b6;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-style: italic;
+        }
+        .modern .clause {
+            border-bottom: 2px dashed #74b9ff;
+            position: relative;
+        }
+        
+        /* 传统模式样式 */
+        .traditional {
+            font-family: 'Times New Roman', serif;
+            background: #2c3e50;
+            color: white;
+        }
+        .traditional u {
+            text-decoration-color: #e74c3c;
+            text-decoration-thickness: 3px;
+        }
+        
+        /* 极简模式 - 在JS中动态设置 */
+        
+        .info {
+            margin: 20px 0;
+            padding: 20px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            color: #1976d2;
+        }
+        
+        .mode-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .mode-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .mode-btn.active {
+            border-color: #007aff;
+            background: #f0f7ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 AI直接标记句子测试</h1>
+        
+        <div class="info">
+            💡 新方案：让AI在生成句子时就直接输出带标记的HTML，无需二次分析！
+        </div>
+        
+        <div class="controls">
+            <select id="patternSelect">
+                <option value="SV">SV - 主谓</option>
+                <option value="SVP">SVP - 主系表</option>
+                <option value="SVO" selected>SVO - 主谓宾</option>
+                <option value="SVOO">SVOO - 主谓双宾</option>
+                <option value="SVOC">SVOC - 主谓宾补</option>
+            </select>
+            <select id="difficultySelect">
+                <option value="1">1星</option>
+                <option value="2">2星</option>
+                <option value="3" selected>3星</option>
+                <option value="4">4星</option>
+                <option value="5">5星</option>
+            </select>
+            <button onclick="generateSentence()">生成句子</button>
+        </div>
+        
+        <div class="mode-buttons">
+            <button class="mode-btn active" onclick="switchMode('modern')">现代模式</button>
+            <button class="mode-btn" onclick="switchMode('traditional')">传统模式</button>
+            <button class="mode-btn" onclick="switchMode('minimal')">极简模式</button>
+        </div>
+        
+        <div id="sentenceDisplay" class="sentence-display modern">
+            点击"生成句子"开始测试
+        </div>
+        
+        <div id="explanation" style="text-align: center; margin-top: 20px; color: #666;"></div>
+    </div>
+
+    <script src="ai-assistant-simple.js"></script>
+    <script>
+        let currentMode = 'modern';
+        let currentSentenceData = null;
+        
+        async function generateSentence() {
+            const pattern = document.getElementById('patternSelect').value;
+            const difficulty = document.getElementById('difficultySelect').value;
+            const display = document.getElementById('sentenceDisplay');
+            const explanation = document.getElementById('explanation');
+            
+            display.innerHTML = '⏳ 生成中...';
+            explanation.textContent = '';
+            
+            try {
+                const result = await AIAssistantSimple.generateMarkedSentence(pattern, difficulty);
+                
+                if (result) {
+                    currentSentenceData = result;
+                    displaySentence();
+                    explanation.textContent = result.explanation || '';
+                } else {
+                    display.innerHTML = '❌ 生成失败，请重试';
+                }
+            } catch (error) {
+                display.innerHTML = '❌ 错误：' + error.message;
+            }
+        }
+        
+        function displaySentence() {
+            if (!currentSentenceData) return;
+            
+            const display = document.getElementById('sentenceDisplay');
+            const html = AIAssistantSimple.convertToDisplayMode(
+                currentSentenceData.sentence, 
+                currentMode
+            );
+            display.innerHTML = html;
+        }
+        
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 更新显示区样式
+            const display = document.getElementById('sentenceDisplay');
+            display.className = `sentence-display ${mode}`;
+            
+            // 重新显示句子
+            if (currentSentenceData) {
+                displaySentence();
+            }
+        }
+        
+        // 测试数据（备用）
+        function showTestData() {
+            currentSentenceData = {
+                sentence: "<span class='subject'>The students <span class='clause'>who studied hard</span></span> <span class='modifier'>finally</span> <span class='verb'>passed</span> <span class='object'>the difficult exam</span> <span class='modifier'>yesterday</span>.",
+                plainText: "The students who studied hard finally passed the difficult exam yesterday.",
+                pattern: "SVO",
+                explanation: "主语'The students'包含定语从句'who studied hard'，'finally'和'yesterday'是状语"
+            };
+            displaySentence();
+            document.getElementById('explanation').textContent = currentSentenceData.explanation;
+        }
+    </script>
+</body>
+</html>

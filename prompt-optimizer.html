@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI提示词优化器</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .status {
+            padding: 10px;
+            background: #2d2d30;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .test-case {
+            margin: 10px 0;
+            padding: 10px;
+            background: #252526;
+            border-radius: 4px;
+        }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+        .warning { color: #dcdcaa; }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #3c3c3c;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #007acc;
+            transition: width 0.3s;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+        .results {
+            white-space: pre-wrap;
+            font-size: 12px;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI提示词自动优化系统</h1>
+        
+        <div class="status" id="status">
+            准备就绪...
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        </div>
+        
+        <div>
+            <button onclick="startOptimization()">开始优化</button>
+            <button onclick="stopOptimization()">停止</button>
+            <button onclick="clearResults()">清除结果</button>
+        </div>
+        
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        let isRunning = false;
+        let currentIteration = 0;
+        let successRate = 0;
+        let bestPrompt = null;
+        let bestScore = 0;
+
+        // 测试用例集
+        const testCases = [
+            {
+                sentence: "The students who studied hard finally passed the difficult exam yesterday.",
+                pattern: "SVO",
+                expected: {
+                    subject: [0, 4], // The students who studied hard
+                    verb: [6, 6],    // passed
+                    object: [7, 9],  // the difficult exam
+                    modifiers: [[5, 5], [10, 10]] // finally, yesterday
+                }
+            },
+            {
+                sentence: "The book that I bought yesterday is very interesting.",
+                pattern: "SVP",
+                expected: {
+                    subject: [0, 5], // The book that I bought yesterday
+                    verb: [6, 6],    // is
+                    complement: [7, 8] // very interesting
+                }
+            },
+            {
+                sentence: "The teacher gave the students who worked overtime extra homework.",
+                pattern: "SVOO",
+                expected: {
+                    subject: [0, 1], // The teacher
+                    verb: [2, 2],    // gave
+                    indirectObject: [3, 7], // the students who worked overtime
+                    object: [8, 9]   // extra homework
+                }
+            },
+            {
+                sentence: "They elected him president unanimously.",
+                pattern: "SVOC",
+                expected: {
+                    subject: [0, 0], // They
+                    verb: [1, 1],    // elected
+                    object: [2, 2],  // him
+                    complement: [3, 3], // president
+                    modifiers: [[4, 4]] // unanimously
+                }
+            },
+            {
+                sentence: "The proposal which the committee reviewed carefully needs more work.",
+                pattern: "SVO",
+                expected: {
+                    subject: [0, 6], // The proposal which the committee reviewed carefully
+                    verb: [7, 7],    // needs
+                    object: [8, 9]   // more work
+                }
+            }
+        ];
+
+        // 动态提示词模板
+        class PromptOptimizer {
+            constructor() {
+                this.variations = {
+                    rules: [
+                        "定语从句必须包含在它所修饰的名词所属的成分中",
+                        "关系代词后的所有内容直到逗号或下一个主要成分都属于定语从句",
+                        "定语从句的边界由关系代词开始，到从句谓语的宾语或补语结束"
+                    ],
+                    examples: [
+                        {
+                            sentence: "The students who studied hard passed.",
+                            marking: "主语:[0-4] 包含定语从句"
+                        },
+                        {
+                            sentence: "The book that I read is good.",
+                            marking: "主语:[0-4] 包含定语从句that I read"
+                        }
+                    ],
+                    emphasis: [
+                        "严格遵守",
+                        "必须精确",
+                        "特别注意"
+                    ]
+                };
+                this.currentConfig = {
+                    ruleIndex: 0,
+                    exampleCount: 1,
+                    emphasisLevel: 0
+                };
+            }
+
+            generatePrompt() {
+                const rule = this.variations.rules[this.currentConfig.ruleIndex];
+                const examples = this.variations.examples.slice(0, this.currentConfig.exampleCount + 1);
+                const emphasis = this.variations.emphasis[this.currentConfig.emphasisLevel];
+                
+                return `你是英语句子结构分析专家。${emphasis}以下规则：
+
+核心规则：
+1. ${rule}
+2. 状语(finally, yesterday等)不属于主谓宾，单独标记
+3. 使用精确的索引范围[start, end]，从0开始
+
+示例：
+${examples.map(ex => `"${ex.sentence}" → ${ex.marking}`).join('\n')}
+
+分析句子时返回JSON：
+{
+    "tokens": ["分词数组"],
+    "components": {
+        "subject": {"range": [开始, 结束], "text": "文本"},
+        "verb": {"range": [开始, 结束], "text": "文本"},
+        "object": {"range": [开始, 结束], "text": "文本"}
+    },
+    "modifiers": [{"range": [开始, 结束], "type": "类型"}]
+}`;
+            }
+
+            evolve(score) {
+                // 根据得分进化提示词配置
+                if (score < 0.5) {
+                    this.currentConfig.ruleIndex = (this.currentConfig.ruleIndex + 1) % this.variations.rules.length;
+                } else if (score < 0.8) {
+                    this.currentConfig.exampleCount = Math.min(this.currentConfig.exampleCount + 1, this.variations.examples.length - 1);
+                } else if (score < 0.95) {
+                    this.currentConfig.emphasisLevel = Math.min(this.currentConfig.emphasisLevel + 1, this.variations.emphasis.length - 1);
+                }
+            }
+        }
+
+        const optimizer = new PromptOptimizer();
+
+        async function testPrompt(promptText) {
+            const results = [];
+            let correctCount = 0;
+            
+            for (const testCase of testCases) {
+                try {
+                    const response = await callQwenAPI(promptText, testCase.sentence, testCase.pattern);
+                    const score = evaluateResponse(response, testCase.expected);
+                    
+                    results.push({
+                        sentence: testCase.sentence,
+                        success: score > 0.9,
+                        score: score,
+                        response: response
+                    });
+                    
+                    if (score > 0.9) correctCount++;
+                } catch (error) {
+                    results.push({
+                        sentence: testCase.sentence,
+                        success: false,
+                        score: 0,
+                        error: error.message
+                    });
+                }
+            }
+            
+            return {
+                successRate: correctCount / testCases.length,
+                results: results
+            };
+        }
+
+        async function callQwenAPI(systemPrompt, sentence, pattern) {
+            const response = await fetch('https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer sk-8a9d17f2199449ca87988c5d82ae30be'
+                },
+                body: JSON.stringify({
+                    model: 'qwen-turbo-latest',
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: `分析句子："${sentence}" (句型：${pattern})` }
+                    ],
+                    temperature: 0.1,
+                    max_tokens: 1000
+                })
+            });
+            
+            const data = await response.json();
+            if (data.choices && data.choices[0]) {
+                return JSON.parse(data.choices[0].message.content);
+            }
+            throw new Error('API调用失败');
+        }
+
+        function evaluateResponse(response, expected) {
+            let score = 0;
+            let totalChecks = 0;
+            
+            // 检查主语
+            if (response.components?.subject?.range) {
+                totalChecks++;
+                if (arraysEqual(response.components.subject.range, expected.subject)) {
+                    score++;
+                }
+            }
+            
+            // 检查谓语
+            if (response.components?.verb?.range) {
+                totalChecks++;
+                if (arraysEqual(response.components.verb.range, expected.verb)) {
+                    score++;
+                }
+            }
+            
+            // 检查宾语
+            if (expected.object && response.components?.object?.range) {
+                totalChecks++;
+                if (arraysEqual(response.components.object.range, expected.object)) {
+                    score++;
+                }
+            }
+            
+            // 检查修饰语
+            if (expected.modifiers && response.modifiers) {
+                totalChecks++;
+                let modifierScore = 0;
+                for (const expectedMod of expected.modifiers) {
+                    if (response.modifiers.some(mod => arraysEqual(mod.range, expectedMod))) {
+                        modifierScore += 1 / expected.modifiers.length;
+                    }
+                }
+                score += modifierScore;
+            }
+            
+            return totalChecks > 0 ? score / totalChecks : 0;
+        }
+
+        function arraysEqual(a, b) {
+            return Array.isArray(a) && Array.isArray(b) && 
+                   a.length === b.length && 
+                   a.every((val, index) => val === b[index]);
+        }
+
+        async function startOptimization() {
+            if (isRunning) return;
+            isRunning = true;
+            currentIteration = 0;
+            bestScore = 0;
+            
+            updateStatus('🚀 开始优化提示词...');
+            
+            while (isRunning && currentIteration < 20) {
+                currentIteration++;
+                updateProgress(currentIteration * 5);
+                
+                const prompt = optimizer.generatePrompt();
+                updateStatus(`📝 测试第 ${currentIteration} 次迭代...`);
+                
+                const result = await testPrompt(prompt);
+                
+                if (result.successRate > bestScore) {
+                    bestScore = result.successRate;
+                    bestPrompt = prompt;
+                    logResult(`✅ 新最佳成绩: ${(bestScore * 100).toFixed(1)}%`, 'success');
+                }
+                
+                logResult(`迭代 ${currentIteration}: 成功率 ${(result.successRate * 100).toFixed(1)}%`);
+                
+                // 显示详细结果
+                for (const testResult of result.results) {
+                    if (testResult.success) {
+                        logResult(`  ✓ ${testResult.sentence.substring(0, 50)}...`, 'success');
+                    } else {
+                        logResult(`  ✗ ${testResult.sentence.substring(0, 50)}...`, 'error');
+                        if (testResult.error) {
+                            logResult(`    错误: ${testResult.error}`, 'error');
+                        }
+                    }
+                }
+                
+                // 如果达到完美分数，停止
+                if (result.successRate >= 0.95) {
+                    logResult('🎉 找到最优提示词！', 'success');
+                    break;
+                }
+                
+                // 进化提示词
+                optimizer.evolve(result.successRate);
+                
+                // 延迟避免频率限制
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            if (bestPrompt) {
+                logResult('\n📋 最佳提示词:', 'warning');
+                logResult(bestPrompt);
+                logResult(`\n最终成功率: ${(bestScore * 100).toFixed(1)}%`, 'success');
+            }
+            
+            isRunning = false;
+            updateStatus('✅ 优化完成');
+            updateProgress(100);
+        }
+
+        function stopOptimization() {
+            isRunning = false;
+            updateStatus('⏹️ 已停止');
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            updateProgress(0);
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        function updateProgress(percent) {
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+
+        function logResult(message, type = '') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type ? ` class="${type}"` : '';
+            results.innerHTML += `<div${className}>[${timestamp}] ${message}</div>`;
+            results.scrollTop = results.scrollHeight;
+        }
+    </script>
+</body>
+</html>

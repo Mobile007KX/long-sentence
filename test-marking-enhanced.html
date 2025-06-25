@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Qwen标记测试工具 - 增强版</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f7;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #1d1d1f;
+            text-align: center;
+        }
+        .input-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .preset-sentences {
+            margin: 20px 0;
+        }
+        .sentence-option {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .sentence-option:hover {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+        .prompt-templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .prompt-card {
+            padding: 15px;
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .prompt-card.active {
+            background: #e0f2fe;
+            border-color: #0284c7;
+        }
+        .prompt-card h3 {
+            margin: 0 0 10px 0;
+            color: #374151;
+        }
+        button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0055d4;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .result-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        .marked-result {
+            font-size: 20px;
+            line-height: 1.8;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            margin: 15px 0;
+            word-wrap: break-word;
+        }
+        /* 标记样式 */
+        .subject { background: #ffe0e0; color: #d32f2f; padding: 2px 4px; border-radius: 3px; }
+        .verb { background: #e3f2fd; color: #1976d2; padding: 2px 4px; border-radius: 3px; text-decoration: underline; }
+        .object { background: #e8f5e9; color: #388e3c; padding: 2px 4px; border-radius: 3px; }
+        .clause { border-bottom: 2px dashed #f57c00; background: #fff3e0; }
+        .modifier { background: #f3e5f5; color: #7b1fa2; padding: 2px 4px; border-radius: 3px; }
+        
+        .raw-result {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+        .error {
+            color: #dc2626;
+            background: #fee;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        label {
+            font-weight: bold;
+            color: #374151;
+            margin-right: 5px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007aff;
+        }
+        .stat-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Qwen句子标记测试工具</h1>
+        
+        <div class="input-section">
+            <h2>1. 选择或输入句子</h2>
+            
+            <div class="preset-sentences">
+                <label>预设句子（点击选择）：</label>
+                <div id="presetList"></div>
+            </div>
+            
+            <label>或手动输入句子：</label>
+            <textarea id="sentenceInput" placeholder="输入要测试的英语句子..."></textarea>
+        </div>
+        
+        <div class="input-section">
+            <h2>2. 选择或自定义提示词</h2>
+            
+            <div class="prompt-templates" id="promptTemplates">
+                <!-- 提示词模板将通过JS动态生成 -->
+            </div>
+            
+            <label>或自定义提示词：</label>
+            <textarea id="promptInput" placeholder="输入自定义提示词..."></textarea>
+        </div>
+        
+        <div class="input-section">
+            <h2>3. 测试选项</h2>
+            <div class="controls">
+                <button onclick="testSingle()">测试当前句子</button>
+                <button onclick="testAll()">测试所有预设句子</button>
+                <button onclick="batchTest()">批量测试（多提示词×多句子）</button>
+                <button onclick="clearResults()">清除结果</button>
+            </div>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_KEY = 'sk-8a9d17f2199449ca87988c5d82ae30be';
+        const API_URL = 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions';
+        
+        // 预设句子
+        const presetSentences = [
+            // 简单句子（用于测试基础功能）
+            {
+                id: 1,
+                text: "The students who studied hard finally passed the exam.",
+                difficulty: 3,
+                category: "basic"
+            },
+            {
+                id: 2,
+                text: "The book which I bought yesterday is interesting.",
+                difficulty: 2,
+                category: "basic"
+            },
+            // 高难度长难句
+            {
+                id: 3,
+                text: "Although several Nobel-prize-winning economists—still lauded for their accurate predictions during the 2008 crisis—cautioned that unchecked algorithmic trading could trigger abrupt flash crashes across global exchanges, the finance minister, emboldened by an unprecedented surge in short-term tax revenues, confidently announced that further regulation would \"stifle innovation\" and must therefore be postponed until an independent impact study was completed.",
+                difficulty: 5,
+                category: "complex"
+            },
+            {
+                id: 4,
+                text: "While the conservation consortium, pressed by dwindling donations and an increasingly hostile political climate, hailed the reintroduction of apex predators as a triumph of evidence-based policy, local ranchers, furious about escalating livestock losses, filed a class-action lawsuit alleging that the agency's environmental-impact statement—rushed through under public pressure—had systematically ignored peer-reviewed data on predation spill-over into adjacent farmlands.",
+                difficulty: 5,
+                category: "complex"
+            },
+            {
+                id: 5,
+                text: "Even after the multinational biotechnology firm—whose synthetic enzymes once revolutionized green manufacturing—had secured emergency approval for a novel mRNA pesticide, regulators in two trade blocs, alarmed by activist reports of unforeseen gene-drift scenarios, demanded real-world ecosystem trials spanning three growth cycles before allowing commercial deployment, thereby delaying projected market entry by at least twenty-seven months.",
+                difficulty: 5,
+                category: "complex"
+            },
+            {
+                id: 6,
+                text: "Although her campaign staff, convinced by a last-minute focus-group report indicating a sharp rise in youth engagement, urged an aggressive social-media rollout, the incumbent senator, wary of exacerbating donor fatigue and mindful of mounting misinformation lawsuits, reluctantly shelved the viral-marketing strategy, opting instead for a deliberately subdued town-hall tour across economically depressed counties.",
+                difficulty: 5,
+                category: "complex"
+            },
+            {
+                id: 7,
+                text: "Despite the aeronautics consortium's triumphant unveiling of next-generation hypersonic transport prototypes—featuring ceramic-matrix skins and AI-adaptive flight surfaces—independent safety auditors, citing unreconciled thermal-fatigue data from cryogenic wind-tunnel simulations, refused to certify the air-worthiness dossier, forcing investors to delay their multi-billion-dollar Series-D tranche until supplementary stress-fracture analyses could be peer-reviewed.",
+                difficulty: 5,
+                category: "complex"
+            },
+            {
+                id: 8,
+                text: "While renowned medical ethicists, echoing decades-old principles set forth in the Helsinki Declaration, argued that placebo-controlled oncology trials were no longer morally defensible, the supervisory board—keen to safeguard statistical power and anxious about shareholder litigation—insisted on maintaining the double-blind design, thereby igniting a storm of resignation threats from senior clinical investigators across three continents.",
+                difficulty: 5,
+                category: "complex"
+            },
+            {
+                id: 9,
+                text: "After the cryptography working group, exhausted by months of midnight videoconferences, finally ratified the quantum-resistant hash-based signature standard, several cloud-security vendors—claiming that firmware supply-chain constraints rendered immediate adoption impossible—petitioned for a two-year transition window, prompting government agencies to issue contradictory compliance deadlines that cybersecurity consultants deemed \"organizationally unachievable.\"",
+                difficulty: 5,
+                category: "complex"
+            },
+            {
+                id: 10,
+                text: "Although the urban-planning committee, dazzled by futuristic renderings of carbon-negative skyscrapers covered in algae façades, unanimously endorsed the redevelopment blueprint, fiscal analysts warned that unforeseen interest-rate hikes could balloon municipal bond-servicing costs beyond statutory caps, thereby obliging the mayor's office to renegotiate green-infrastructure subsidies with a newly austerity-minded legislature.",
+                difficulty: 5,
+                category: "complex"
+            },
+            {
+                id: 11,
+                text: "Even as the national broadcaster—under mounting pressure to combat disinformation—rolled out an AI-moderated fact-checking overlay for live debates, civil-rights advocates filed an injunction alleging algorithmic bias, claiming that the language-model training corpus, skewed toward elite academic prose, disproportionately flagged dialect speech patterns common in marginalized communities as \"potentially misleading.\"",
+                difficulty: 5,
+                category: "complex"
+            },
+            {
+                id: 12,
+                text: "While the polar-research coalition, racing against accelerated Antarctic ice-shelf collapse, deployed autonomous bathymetric drones to chart sub-ice cavities, geopolitical strategists fretted that the resulting high-resolution seabed maps, if leaked, would inadvertently expose natural-gas hydrates coveted by rival nations, thus complicating a delicate treaty renegotiation scheduled for the upcoming climate summit.",
+                difficulty: 5,
+                category: "complex"
+            }
+        ];
+        
+        // 提示词模板
+        const promptTemplates = {
+            imitation: {
+                name: "模仿学习法",
+                prompt: `学习标记句子成分：
+
+句子1：Birds fly.
+标记：[[Birds]] {{fly}}.
+
+句子2：The cat caught a mouse quickly.
+标记：[[The cat]] {{caught}} ((a mouse)) **quickly**.
+
+句子3：Students who study hard pass exams.
+标记：[[Students <<who study hard>>]] {{pass}} ((exams)).
+
+句子4：The book which I bought is interesting.
+标记：[[The book <<which I bought>>]] {{is}} ((interesting)).
+
+规则：
+- [[主语]] - 包含所有修饰语
+- {{谓语}} - 只包含动词
+- ((宾语/表语))
+- <<从句>> - 嵌套在被修饰词内
+- **状语**
+
+现在标记：`
+            },
+            structured: {
+                name: "结构化说明法",
+                prompt: `分析句子结构并用符号标记。
+
+标记规则：
+1. 主语：[[内容]] - 包含定语从句和所有修饰语
+2. 谓语：{{动词}} - 只标记动词本身
+3. 宾语/表语：((内容))
+4. 定语从句：<<内容>> - 必须嵌套在被修饰词的括号内
+5. 状语：**内容** - 时间、地点、方式等
+
+示例：[[The man <<who helped me>>]] {{is}} ((my teacher)).
+
+句子：`
+            },
+            minimal: {
+                name: "极简指令法",
+                prompt: `用[[主语]]、{{谓语}}、((宾语))、<<定语从句>>、**状语**标记句子。定语从句嵌套在被修饰词内。
+
+句子：`
+            },
+            custom: {
+                name: "自定义",
+                prompt: ""
+            }
+        };
+        
+        // 初始化页面
+        function init() {
+            // 渲染预设句子
+            const presetList = document.getElementById('presetList');
+            presetSentences.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'sentence-option';
+                div.textContent = `${s.id}. (难度${s.difficulty}) ${s.text}`;
+                div.onclick = () => {
+                    document.getElementById('sentenceInput').value = s.text;
+                };
+                presetList.appendChild(div);
+            });
+            
+            // 渲染提示词模板
+            const templateDiv = document.getElementById('promptTemplates');
+            Object.entries(promptTemplates).forEach(([key, template]) => {
+                const div = document.createElement('div');
+                div.className = 'prompt-card';
+                div.innerHTML = `<h3>${template.name}</h3><pre style="font-size: 12px; overflow: hidden; text-overflow: ellipsis;">${template.prompt.substring(0, 100)}...</pre>`;
+                div.onclick = () => {
+                    document.querySelectorAll('.prompt-card').forEach(c => c.classList.remove('active'));
+                    div.classList.add('active');
+                    document.getElementById('promptInput').value = template.prompt;
+                };
+                templateDiv.appendChild(div);
+            });
+            
+            // 默认选择第一个模板
+            templateDiv.firstChild.click();
+        }
+        
+        async function callAPI(prompt, sentence) {
+            const fullPrompt = prompt + (prompt.endsWith('\n') || prompt.endsWith(' ') || prompt.endsWith('：') ? '' : '\n') + sentence;
+            
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'qwen-turbo-latest',
+                    messages: [
+                        { role: "user", content: fullPrompt }
+                    ],
+                    temperature: 0.3,
+                    max_tokens: 1000
+                })
+            });
+            
+            const data = await response.json();
+            if (data.choices?.[0]?.message?.content) {
+                return data.choices[0].message.content;
+            }
+            throw new Error('API调用失败');
+        }
+        
+        function visualizeResult(marked) {
+            return marked
+                .replace(/\[\[(.+?)\]\]/g, '<span class="subject">$1</span>')
+                .replace(/\{\{(.+?)\}\}/g, '<span class="verb">$1</span>')
+                .replace(/\(\((.+?)\)\)/g, '<span class="object">$1</span>')
+                .replace(/<<(.+?)>>/g, '<span class="clause">$1</span>')
+                .replace(/\*\*(.+?)\*\*/g, '<span class="modifier">$1</span>');
+        }
+        
+        async function testSingle() {
+            const sentence = document.getElementById('sentenceInput').value.trim();
+            const prompt = document.getElementById('promptInput').value.trim();
+            
+            if (!sentence || !prompt) {
+                alert('请输入句子和提示词');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">测试中...</div>';
+            
+            try {
+                const result = await callAPI(prompt, sentence);
+                
+                resultsDiv.innerHTML = `
+                    <div class="result-section">
+                        <h3>测试结果</h3>
+                        <div class="marked-result">
+                            <strong>原始输出：</strong><br>
+                            <div class="raw-result">${result}</div>
+                        </div>
+                        <div class="marked-result">
+                            <strong>可视化：</strong><br>
+                            ${visualizeResult(result)}
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">错误：${error.message}</div>`;
+            }
+        }
+        
+        async function testAll() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            if (!prompt) {
+                alert('请选择或输入提示词');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">批量测试中...</div>';
+            
+            let html = '<div class="result-section"><h3>批量测试结果</h3>';
+            let successCount = 0;
+            
+            for (const sentence of presetSentences) {
+                try {
+                    const result = await callAPI(prompt, sentence.text);
+                    const hasMarking = result.includes('[[') || result.includes('{{');
+                    
+                    if (hasMarking) successCount++;
+                    
+                    html += `
+                        <div style="margin: 20px 0; padding: 20px; background: #f9fafb; border-radius: 8px;">
+                            <h4>句子 ${sentence.id} (难度 ${sentence.difficulty})</h4>
+                            <div style="margin: 10px 0; padding: 10px; background: white; border-radius: 4px;">
+                                ${sentence.text}
+                            </div>
+                            <div class="marked-result">
+                                ${visualizeResult(result)}
+                            </div>
+                        </div>
+                    `;
+                    
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } catch (error) {
+                    html += `<div class="error">句子 ${sentence.id} 测试失败：${error.message}</div>`;
+                }
+            }
+            
+            html += `
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value">${successCount}/${presetSentences.length}</div>
+                        <div class="stat-label">成功标记</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${((successCount/presetSentences.length)*100).toFixed(1)}%</div>
+                        <div class="stat-label">成功率</div>
+                    </div>
+                </div>
+            </div>`;
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        async function batchTest() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">批量测试多个提示词...</div>';
+            
+            let html = '<div class="result-section"><h3>批量测试结果对比</h3>';
+            const testResults = {};
+            
+            // 测试每个提示词模板
+            for (const [key, template] of Object.entries(promptTemplates)) {
+                if (key === 'custom') continue;
+                
+                testResults[key] = {
+                    name: template.name,
+                    results: [],
+                    successCount: 0
+                };
+                
+                // 测试前3个句子
+                for (let i = 0; i < Math.min(3, presetSentences.length); i++) {
+                    const sentence = presetSentences[i];
+                    try {
+                        const result = await callAPI(template.prompt, sentence.text);
+                        const hasMarking = result.includes('[[') && result.includes('{{');
+                        
+                        if (hasMarking) testResults[key].successCount++;
+                        
+                        testResults[key].results.push({
+                            sentence: sentence.text,
+                            result: result,
+                            success: hasMarking
+                        });
+                        
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    } catch (error) {
+                        testResults[key].results.push({
+                            sentence: sentence.text,
+                            error: error.message
+                        });
+                    }
+                }
+            }
+            
+            // 显示对比结果
+            html += '<div class="stats">';
+            Object.entries(testResults).forEach(([key, data]) => {
+                const rate = ((data.successCount / data.results.length) * 100).toFixed(1);
+                html += `
+                    <div class="stat-card">
+                        <div class="stat-value">${rate}%</div>
+                        <div class="stat-label">${data.name}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            // 详细结果
+            Object.entries(testResults).forEach(([key, data]) => {
+                html += `<h4>${data.name}</h4>`;
+                data.results.forEach((r, i) => {
+                    if (r.error) {
+                        html += `<div class="error">错误：${r.error}</div>`;
+                    } else {
+                        html += `
+                            <div style="margin: 10px 0;">
+                                <div style="font-size: 14px; color: #666;">句子 ${i+1}：</div>
+                                <div class="marked-result" style="font-size: 16px;">
+                                    ${visualizeResult(r.result)}
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            });
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        // 初始化
+        init();
+    </script>
+</body>
+</html>

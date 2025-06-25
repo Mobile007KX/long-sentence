@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Qwen标记方案测试</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f7;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #1d1d1f;
+            border-bottom: 2px solid #007aff;
+            padding-bottom: 10px;
+        }
+        .prompt-box {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid #e5e7eb;
+        }
+        .result-box {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        .error-box {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0055d4;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        .score {
+            float: right;
+            font-weight: bold;
+            color: #007aff;
+        }
+        /* 标记预览样式 */
+        .marked-preview {
+            font-size: 20px;
+            line-height: 1.8;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .subject-mark { color: #d32f2f; font-weight: bold; }
+        .verb-mark { color: #1976d2; text-decoration: underline; }
+        .object-mark { color: #388e3c; font-style: italic; }
+        .clause-mark { border-bottom: 2px dashed #f57c00; }
+        .modifier-mark { color: #7b1fa2; background: #f3e5f5; padding: 2px 4px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Qwen标记方案实测</h1>
+    
+    <div class="test-container">
+        <h2>测试句子</h2>
+        <div class="prompt-box">
+The researchers who had been studying climate change patterns for decades finally published their groundbreaking findings which challenged conventional theories yesterday.
+        </div>
+    </div>
+
+    <button onclick="testAllMethods()">测试所有方案</button>
+    <button onclick="clearResults()">清除结果</button>
+
+    <div id="testResults"></div>
+
+    <script>
+        const API_KEY = 'sk-8a9d17f2199449ca87988c5d82ae30be';
+        const API_URL = 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions';
+        
+        const testSentence = "The researchers who had been studying climate change patterns for decades finally published their groundbreaking findings which challenged conventional theories yesterday.";
+        
+        const prompts = {
+            direct: `用特殊符号标记句子成分。
+
+示例：
+输入：The boy ate an apple.
+输出：[[The boy]] {{ate}} ((an apple)).
+
+输入：The students who work hard succeed.
+输出：[[The students <<who work hard>>]] {{succeed}}.
+
+规则：
+[[主语]] {{谓语}} ((宾语)) <<定语从句>> **状语**
+
+现在标记：
+"${testSentence}"`,
+
+            stepByStep: `标记下面句子的成分：
+"${testSentence}"
+
+步骤：
+1. 找到主句谓语动词 → published
+2. 主语是谓语前的所有内容（除独立状语） → The researchers who...decades
+3. 用[[]]包裹主语，定语从句用<<>>嵌套在内
+4. 用{{}}包裹谓语
+5. 用(())包裹宾语
+6. 用**包裹状语
+
+输出格式：一行标记好的句子`,
+
+            imitation: `学习标记句子成分：
+
+句子1：Birds fly.
+标记：[[Birds]] {{fly}}.
+
+句子2：The cat caught a mouse quickly.
+标记：[[The cat]] {{caught}} ((a mouse)) **quickly**.
+
+句子3：Students who study hard pass exams.
+标记：[[Students <<who study hard>>]] {{pass}} ((exams)).
+
+注意：定语从句<<>>要嵌套在它修饰的名词所在的括号内。
+
+现在用同样方式标记：
+"${testSentence}"`,
+
+            minimal: `用[[主语]]、{{谓语}}、((宾语))、<<定语从句>>、**状语**标记下面的句子。定语从句嵌套在被修饰词内。
+
+句子：${testSentence}`
+        };
+        
+        async function testMethod(methodName, prompt) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'qwen-turbo-latest',
+                        messages: [
+                            { role: "user", content: prompt }
+                        ],
+                        temperature: 0.3,
+                        max_tokens: 500
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.choices?.[0]?.message?.content) {
+                    return data.choices[0].message.content;
+                }
+                throw new Error('无响应');
+            } catch (error) {
+                return `错误: ${error.message}`;
+            }
+        }
+        
+        function evaluateResult(result) {
+            // 检查关键标记
+            const checks = {
+                hasSubject: result.includes('[[') && result.includes(']]'),
+                hasVerb: result.includes('{{') && result.includes('}}'),
+                hasObject: result.includes('((') && result.includes('))'),
+                hasClause: result.includes('<<') && result.includes('>>'),
+                hasModifier: result.includes('**'),
+                hasNesting: result.includes(']] **') || result.includes('>>]]'), // 检查嵌套
+            };
+            
+            const score = Object.values(checks).filter(v => v).length / Object.keys(checks).length * 100;
+            
+            return {
+                score: Math.round(score),
+                checks: checks
+            };
+        }
+        
+        function visualizeMarkedSentence(marked) {
+            // 转换为可视化HTML
+            let html = marked
+                .replace(/\[\[(.+?)\]\]/g, '<span class="subject-mark">$1</span>')
+                .replace(/\{\{(.+?)\}\}/g, '<span class="verb-mark">$1</span>')
+                .replace(/\(\((.+?)\)\)/g, '<span class="object-mark">$1</span>')
+                .replace(/<<(.+?)>>/g, '<span class="clause-mark">$1</span>')
+                .replace(/\*\*(.+?)\*\*/g, '<span class="modifier-mark">$1</span>');
+            
+            return html;
+        }
+        
+        async function testAllMethods() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="loading">测试中...</div>';
+            
+            let html = '';
+            const scores = {};
+            
+            for (const [methodName, prompt] of Object.entries(prompts)) {
+                html += `<div class="test-container">`;
+                html += `<h2>方案：${methodName}</h2>`;
+                html += `<div class="prompt-box">${prompt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`;
+                
+                const result = await testMethod(methodName, prompt);
+                const evaluation = evaluateResult(result);
+                scores[methodName] = evaluation.score;
+                
+                html += `<div class="result-box">`;
+                html += `<div class="score">得分：${evaluation.score}%</div>`;
+                html += `<strong>原始输出：</strong><br>${result.replace(/</g, '&lt;').replace(/>/g, '&gt;')}`;
+                html += `</div>`;
+                
+                if (evaluation.score > 50) {
+                    html += `<div class="marked-preview">`;
+                    html += `<strong>可视化预览：</strong><br>`;
+                    html += visualizeMarkedSentence(result);
+                    html += `</div>`;
+                }
+                
+                html += `</div>`;
+                
+                // 延迟避免频率限制
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            // 找出最佳方案
+            const bestMethod = Object.entries(scores).reduce((a, b) => a[1] > b[1] ? a : b);
+            html = `<div class="test-container" style="background: #e8f5e9;">
+                <h2>🏆 最佳方案：${bestMethod[0]} (${bestMethod[1]}%)</h2>
+            </div>` + html;
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

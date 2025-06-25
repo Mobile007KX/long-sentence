@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>句子结构渐进式展示</title>
+    <style>
+        body {
+            font-family: -apple-system, 'Segoe UI', 'PingFang SC', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f5f7;
+        }
+        
+        .demo-container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1d1d1f;
+            margin-bottom: 40px;
+        }
+        
+        /* 句子展示区域 */
+        .sentence-display {
+            font-size: 28px;
+            line-height: 2;
+            text-align: center;
+            padding: 40px 20px;
+            margin: 30px 0;
+            background: #fafafa;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 基础样式 - 所有元素默认淡化 */
+        .sentence-display span {
+            transition: all 0.8s ease;  /* 从0.5s改为0.8s，更舒缓 */
+            position: relative;
+            display: inline-block;
+        }
+        
+        /* 阶段0：全部淡化 */
+        .stage-0 span {
+            color: #ccc;
+            opacity: 0.4;
+        }
+        
+        /* 阶段1：主干高亮 */
+        .stage-1 .core {
+            color: #333;
+            opacity: 1;
+            font-weight: 600;
+            position: relative;
+            padding: 4px 12px;
+        }
+        
+        /* 红圈效果 */
+        .stage-1 .core::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border: 2px solid #ff4444;
+            border-radius: 20px;
+            opacity: 0;
+            animation: circleAppear 0.8s ease forwards;  /* 从0.5s改为0.8s */
+            animation-delay: 0.3s;  /* 添加延迟，让用户先看到文字高亮 */
+            z-index: -1;
+        }
+        
+        @keyframes circleAppear {
+            0% {
+                opacity: 0;
+                transform: scale(1.3);  /* 从1.2改为1.3，动画更明显 */
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);  /* 添加中间状态，稍微过冲 */
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .stage-1 .non-core {
+            color: #ddd;
+            opacity: 0.3;
+        }
+        
+        /* 阶段2：显示定语从句 */
+        .stage-2 .relative-clause {
+            opacity: 0.9;
+            color: #ff6b35;  /* 橙色，区别于主要成分 */
+            font-weight: normal;
+            background: rgba(255, 107, 53, 0.08);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        
+        .stage-2 .relative-clause::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #ff6b35;
+            animation: underlineSlide 1.2s ease-out;  /* 从0.8s改为1.2s */
+        }
+        
+        /* 阶段3：显示状语 */
+        .stage-3 .adverb {
+            opacity: 0.8;
+            color: #7b1fa2;
+        }
+        
+        .stage-3 .adverb::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #7b1fa2;
+            animation: underlineSlide 1.0s ease-out;  /* 从0.8s改为1.0s */
+        }
+        
+        /* 阶段4：完整展示 */
+        .stage-4 span {
+            opacity: 1;
+        }
+        
+        .stage-4 .subject { 
+            color: #d32f2f; 
+            position: relative;
+        }
+        
+        .stage-4 .verb { 
+            color: #1976d2; 
+            text-decoration: underline;
+            position: relative;
+        }
+        
+        .stage-4 .object { 
+            color: #388e3c;
+            position: relative;
+        }
+        
+        /* 核心词保持红圈 */
+        .stage-4 .core::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border: 2px solid #ff4444;
+            border-radius: 20px;
+            opacity: 0.6;
+            z-index: -1;
+        }
+        
+        .stage-4 .relative-clause { 
+            color: #ff6b35 !important;  /* 橙色，覆盖父元素颜色 */
+            background: rgba(255, 107, 53, 0.05);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-style: normal;  /* 移除斜体 */
+            font-weight: normal;
+        }
+        
+        .stage-4 .adverb { 
+            color: #7b1fa2;
+            font-weight: normal;
+        }
+        
+        /* 下划线动画 */
+        @keyframes underlineSlide {
+            0% {
+                transform: scaleX(0);
+                transform-origin: left;
+            }
+            50% {
+                transform: scaleX(1);
+                transform-origin: left;
+            }
+            100% {
+                transform: scaleX(1);
+                /* 保持显示，让用户有时间观察 */
+            }
+        }
+        
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #007aff;
+            color: white;
+        }
+        
+        button:hover {
+            background: #0055d4;
+            transform: translateY(-1px);
+        }
+        
+        button.secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        button.secondary:hover {
+            background: #d1d5db;
+        }
+        
+        /* 阶段指示器 */
+        .stage-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        
+        .stage-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.4;
+            transition: opacity 0.3s ease;
+        }
+        
+        .stage-item.active {
+            opacity: 1;
+        }
+        
+        .stage-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        .stage-item.active .stage-dot {
+            background: #007aff;
+            transform: scale(1.2);
+        }
+        
+        /* 说明文字 */
+        .explanation {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            margin: 20px 0;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 骨架句展示 */
+        .skeleton-display {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 20px 0;
+            padding: 20px;
+            background: #fff3e0;
+            border-radius: 8px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.5s ease;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .skeleton-display.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .skeleton-word {
+            display: inline-block;
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #ff4444;
+            border-radius: 20px;
+            color: #333;
+            animation: popIn 0.4s ease forwards;
+            animation-delay: var(--delay);
+        }
+        
+        .skeleton-word:nth-child(1) { --delay: 0.2s; }  /* 从0.1s改为0.2s */
+        .skeleton-word:nth-child(2) { --delay: 0.5s; }  /* 从0.3s改为0.5s */
+        .skeleton-word:nth-child(3) { --delay: 0.8s; }  /* 从0.5s改为0.8s */
+        
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.7) translateY(10px);
+            }
+            50% {
+                transform: scale(1.1) translateY(-2px);  /* 轻微弹跳效果 */
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>句子结构渐进式展示</h1>
+        
+        <!-- 阶段指示器 -->
+        <div class="stage-indicator">
+            <div class="stage-item active" data-stage="0">
+                <div class="stage-dot"></div>
+                <span>原句</span>
+            </div>
+            <div class="stage-item" data-stage="1">
+                <div class="stage-dot"></div>
+                <span>主干</span>
+            </div>
+            <div class="stage-item" data-stage="2">
+                <div class="stage-dot"></div>
+                <span>从句</span>
+            </div>
+            <div class="stage-item" data-stage="3">
+                <div class="stage-dot"></div>
+                <span>状语</span>
+            </div>
+            <div class="stage-item" data-stage="4">
+                <div class="stage-dot"></div>
+                <span>完整</span>
+            </div>
+        </div>
+        
+        <!-- 句子展示 -->
+        <div class="sentence-display stage-0" id="sentenceDisplay">
+            <span class="subject core">The researchers</span>
+            <span class="subject relative-clause non-core"> (who had been studying climate change patterns for decades)</span>
+            <span class="adverb non-core"> finally</span>
+            <span class="verb core"> published</span>
+            <span class="object core"> their groundbreaking findings</span>
+            <span class="object relative-clause non-core"> (which challenged conventional theories)</span>
+            <span class="adverb non-core"> yesterday</span><span class="non-core">.</span>
+        </div>
+        
+        <!-- 骨架句展示 -->
+        <div class="skeleton-display" id="skeletonDisplay">
+            <span class="skeleton-word">Researchers</span>
+            <span class="skeleton-word">published</span>
+            <span class="skeleton-word">findings</span>
+        </div>
+        
+        <!-- 说明文字 -->
+        <div class="explanation" id="explanation">
+            点击按钮查看句子结构的逐步展示
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="controls">
+            <button onclick="previousStage()">← 上一步</button>
+            <button onclick="nextStage()">下一步 →</button>
+            <button onclick="autoPlay()" class="secondary">自动播放</button>
+            <button onclick="reset()" class="secondary">重置</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStage = 0;
+        let autoPlayInterval = null;
+        const maxStage = 4;
+        
+        const explanations = {
+            0: "完整的句子，包含所有成分",
+            1: "突出显示句子主干：主语核心词 + 谓语 + 宾语核心词",
+            2: "显示定语从句，它们修饰并丰富了主语和宾语",
+            3: "显示状语，提供时间和方式信息",
+            4: "完整的句子结构，不同颜色表示不同成分"
+        };
+        
+        function updateStage(stage) {
+            currentStage = stage;
+            const display = document.getElementById('sentenceDisplay');
+            const skeleton = document.getElementById('skeletonDisplay');
+            const explanation = document.getElementById('explanation');
+            
+            // 更新句子显示
+            display.className = `sentence-display stage-${stage}`;
+            
+            // 更新说明文字
+            explanation.textContent = explanations[stage];
+            
+            // 显示/隐藏骨架句
+            if (stage === 1) {
+                skeleton.classList.add('show');
+            } else {
+                skeleton.classList.remove('show');
+            }
+            
+            // 更新指示器
+            document.querySelectorAll('.stage-item').forEach((item, index) => {
+                item.classList.toggle('active', index <= stage);
+            });
+        }
+        
+        function nextStage() {
+            if (currentStage < maxStage) {
+                updateStage(currentStage + 1);
+            }
+        }
+        
+        function previousStage() {
+            if (currentStage > 0) {
+                updateStage(currentStage - 1);
+            }
+        }
+        
+        function autoPlay() {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+                return;
+            }
+            
+            reset();
+            autoPlayInterval = setInterval(() => {
+                if (currentStage < maxStage) {
+                    nextStage();
+                } else {
+                    clearInterval(autoPlayInterval);
+                    autoPlayInterval = null;
+                }
+            }, 3000);  // 从2000ms改为3000ms，给用户更多观察时间
+        }
+        
+        function reset() {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+            }
+            updateStage(0);
+        }
+        
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextStage();
+            if (e.key === 'ArrowLeft') previousStage();
+            if (e.key === ' ') {
+                e.preventDefault();
+                autoPlay();
+            }
+        });
+    </script>
+</body>
+</html>

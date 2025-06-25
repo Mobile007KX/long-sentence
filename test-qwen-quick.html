@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Qwen API 快速测试</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            padding: 20px; 
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0055d4;
+        }
+        #output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+        .info { color: #dcdcaa; }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Qwen API 快速测试器</h1>
+        
+        <div>
+            <button onclick="testAllVersions()">测试所有提示词版本</button>
+            <button onclick="testCurrentVersion()">测试当前最优版本</button>
+            <button onclick="clearOutput()">清除输出</button>
+        </div>
+        
+        <div>
+            <input type="text" id="testSentence" placeholder="输入要测试的句子..." 
+                   value="The students who studied hard finally passed the difficult exam yesterday.">
+            <button onclick="quickTest()">快速测试这个句子</button>
+        </div>
+        
+        <div id="output"></div>
+    </div>
+
+    <script src="qwen-tester.js"></script>
+    <script>
+        const output = document.getElementById('output');
+        
+        // 重写console.log以显示在页面上
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog(...args);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+            ).join(' ');
+            
+            let className = '';
+            if (message.includes('✅')) className = 'success';
+            else if (message.includes('❌')) className = 'error';
+            else if (message.includes('🧪') || message.includes('📊')) className = 'info';
+            
+            output.innerHTML += `<div class="${className}">${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        };
+        
+        async function testAllVersions() {
+            output.innerHTML = '';
+            try {
+                await QwenTester.testAllVersions();
+            } catch (error) {
+                console.log('❌ 错误: ' + error.message);
+            }
+        }
+        
+        async function testCurrentVersion() {
+            output.innerHTML = '';
+            try {
+                if (!QwenTester.prompts.current) {
+                    QwenTester.prompts.current = QwenTester.prompts.v3;
+                }
+                await QwenTester.testPrompt('current', true);
+            } catch (error) {
+                console.log('❌ 错误: ' + error.message);
+            }
+        }
+        
+        async function quickTest() {
+            const sentence = document.getElementById('testSentence').value;
+            if (!sentence) {
+                alert('请输入句子');
+                return;
+            }
+            
+            output.innerHTML = '';
+            try {
+                await QwenTester.quickTest(sentence);
+            } catch (error) {
+                console.log('❌ 错误: ' + error.message);
+            }
+        }
+        
+        function clearOutput() {
+            output.innerHTML = '';
+        }
+        
+        // 页面加载时自动测试
+        window.onload = async () => {
+            console.log('🚀 Qwen测试器已就绪！');
+            console.log('点击按钮开始测试，或使用以下命令：');
+            console.log('- QwenTester.testAllVersions() - 测试所有版本');
+            console.log('- QwenTester.quickTest("句子") - 快速测试单个句子');
+        };
+    </script>
+</body>
+</html>

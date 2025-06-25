@@ -1,7 +1,9 @@
 // 改进版 AI Assistant Module
 // 使用更精确的结构化提示词
 
-const AIAssistantV2 = {
+// 在浏览器环境中创建全局变量
+if (typeof window !== 'undefined') {
+    window.AIAssistantV2 = {
     // API 配置
     config: {
         apiKey: 'sk-8a9d17f2199449ca87988c5d82ae30be',
@@ -241,11 +243,10 @@ ${JSON.stringify(userSelections, null, 2)}
         }
     }
 };
-
-// 导出新版本
-if (typeof module !== 'undefined' && module.exports) {
+} else {
+    // Node.js 环境
+    const AIAssistantV2 = {
+        // 复制上面相同的对象定义
+    };
     module.exports = AIAssistantV2;
 }
-
-// 向后兼容
-const AIAssistant = AIAssistantV2;
