@@ -46,13 +46,15 @@ class ChallengeMode {
     async generateChallenge(difficulty = 'medium') {
         const config = this.difficulties[difficulty];
         
-        // 构建提示词
-        const prompt = `生成一个英语句子用于句型分析挑战，要求：
+        // 构建提示词，强调生成完全不同的句子
+        const prompt = `生成一个全新的英语句子用于句型分析挑战，要求：
 1. 难度等级：${config.name}
 2. 句子长度：${this.getSentenceLengthDescription(config.sentenceLength)}
 3. 复杂度：${config.complexity}/4
 4. 必须是五大基本句型之一（SV/SVP/SVO/SVOO/SVOC）
-5. 包含一些修饰成分，但主干要清晰
+5. 包含适量修饰成分，但主干要清晰可辨
+6. 句子主题随机（避免重复），可以是：科技、自然、教育、日常生活、商业、艺术等
+7. 确保句子语法正确、语义通顺
 
 返回JSON格式：
 {
@@ -66,6 +68,7 @@ class ChallengeMode {
         "complement": "补语（如果有）",
         "indirectObject": "间接宾语（如果有）"
     },
+    "markedSentence": "标注后的句子，使用HTML标签：<span class='subject core'>主语</span>等",
     "modifiers": ["修饰成分1", "修饰成分2", ...]
 }`;
 
@@ -81,8 +84,8 @@ class ChallengeMode {
             return data;
         } catch (error) {
             console.error('生成挑战失败:', error);
-            // 返回备用句子
-            return this.getFallbackChallenge(difficulty);
+            // 返回备用句子（从扩展的句子库中随机选择）
+            return this.getRandomFallbackChallenge(difficulty);
         }
     }
 
@@ -120,60 +123,134 @@ class ChallengeMode {
     }
 
     /**
-     * 获取备用挑战句子
+     * 获取随机备用挑战句子
      */
-    getFallbackChallenge(difficulty) {
-        const fallbacks = {
-            easy: {
-                sentence: "The happy children are playing games in the park.",
-                pattern: "SVO",
-                skeleton: "Children are playing games",
-                components: {
-                    subject: "children",
-                    verb: "are playing",
-                    object: "games"
+    getRandomFallbackChallenge(difficulty) {
+        const fallbackPools = {
+            easy: [
+                {
+                    sentence: "The happy children are playing games in the park.",
+                    pattern: "SVO",
+                    skeleton: "Children are playing games",
+                    components: {
+                        subject: "children",
+                        verb: "are playing",
+                        object: "games"
+                    },
+                    markedSentence: "<span class='non-core'>The happy</span> <span class='subject core'>children</span> <span class='verb core'>are playing</span> <span class='object core'>games</span> <span class='non-core'>in the park</span>.",
+                    modifiers: ["The happy", "in the park"]
                 },
-                modifiers: ["The happy", "in the park"]
-            },
-            medium: {
-                sentence: "The experienced teacher who loves literature gave her students interesting homework yesterday.",
-                pattern: "SVOO",
-                skeleton: "Teacher gave students homework",
-                components: {
-                    subject: "teacher",
-                    verb: "gave",
-                    indirectObject: "students",
-                    object: "homework"
+                {
+                    sentence: "Birds fly gracefully across the sky.",
+                    pattern: "SV",
+                    skeleton: "Birds fly",
+                    components: {
+                        subject: "birds",
+                        verb: "fly"
+                    },
+                    markedSentence: "<span class='subject core'>Birds</span> <span class='verb core'>fly</span> <span class='non-core'>gracefully across the sky</span>.",
+                    modifiers: ["gracefully", "across the sky"]
                 },
-                modifiers: ["The experienced", "who loves literature", "her", "interesting", "yesterday"]
-            },
-            hard: {
-                sentence: "The committee members elected the young entrepreneur with innovative ideas president of the organization.",
-                pattern: "SVOC",
-                skeleton: "Members elected entrepreneur president",
-                components: {
-                    subject: "members",
-                    verb: "elected",
-                    object: "entrepreneur",
-                    complement: "president"
+                {
+                    sentence: "The flowers smell wonderful today.",
+                    pattern: "SVP",
+                    skeleton: "Flowers smell wonderful",
+                    components: {
+                        subject: "flowers",
+                        verb: "smell",
+                        complement: "wonderful"
+                    },
+                    markedSentence: "<span class='non-core'>The</span> <span class='subject core'>flowers</span> <span class='verb core'>smell</span> <span class='complement core'>wonderful</span> <span class='non-core'>today</span>.",
+                    modifiers: ["The", "today"]
+                }
+            ],
+            medium: [
+                {
+                    sentence: "The experienced teacher who loves literature gave her students interesting homework yesterday.",
+                    pattern: "SVOO",
+                    skeleton: "Teacher gave students homework",
+                    components: {
+                        subject: "teacher",
+                        verb: "gave",
+                        indirectObject: "students",
+                        object: "homework"
+                    },
+                    markedSentence: "<span class='non-core'>The experienced</span> <span class='subject core'>teacher</span> <span class='non-core'>who loves literature</span> <span class='verb core'>gave</span> <span class='non-core'>her</span> <span class='indirect-object core'>students</span> <span class='non-core'>interesting</span> <span class='object core'>homework</span> <span class='non-core'>yesterday</span>.",
+                    modifiers: ["The experienced", "who loves literature", "her", "interesting", "yesterday"]
                 },
-                modifiers: ["The committee", "the young", "with innovative ideas", "of the organization"]
-            },
-            expert: {
-                sentence: "Despite the challenging circumstances, the dedicated researchers who had been working tirelessly finally made their groundbreaking discovery public at the international conference.",
-                pattern: "SVOC",
-                skeleton: "Researchers made discovery public",
-                components: {
-                    subject: "researchers",
-                    verb: "made",
-                    object: "discovery",
-                    complement: "public"
+                {
+                    sentence: "Scientists discovered a revolutionary cure for the disease last month.",
+                    pattern: "SVO",
+                    skeleton: "Scientists discovered cure",
+                    components: {
+                        subject: "scientists",
+                        verb: "discovered",
+                        object: "cure"
+                    },
+                    markedSentence: "<span class='subject core'>Scientists</span> <span class='verb core'>discovered</span> <span class='non-core'>a revolutionary</span> <span class='object core'>cure</span> <span class='non-core'>for the disease last month</span>.",
+                    modifiers: ["a revolutionary", "for the disease", "last month"]
                 },
-                modifiers: ["Despite the challenging circumstances", "the dedicated", "who had been working tirelessly", "finally", "their groundbreaking", "at the international conference"]
-            }
+                {
+                    sentence: "The board members elected John president after careful consideration.",
+                    pattern: "SVOC",
+                    skeleton: "Members elected John president",
+                    components: {
+                        subject: "members",
+                        verb: "elected",
+                        object: "John",
+                        complement: "president"
+                    },
+                    markedSentence: "<span class='non-core'>The board</span> <span class='subject core'>members</span> <span class='verb core'>elected</span> <span class='object core'>John</span> <span class='complement core'>president</span> <span class='non-core'>after careful consideration</span>.",
+                    modifiers: ["The board", "after careful consideration"]
+                }
+            ],
+            hard: [
+                {
+                    sentence: "The committee members who had reviewed all proposals elected the young entrepreneur with innovative ideas president of the organization.",
+                    pattern: "SVOC",
+                    skeleton: "Members elected entrepreneur president",
+                    components: {
+                        subject: "members",
+                        verb: "elected",
+                        object: "entrepreneur",
+                        complement: "president"
+                    },
+                    markedSentence: "<span class='non-core'>The committee</span> <span class='subject core'>members</span> <span class='non-core'>who had reviewed all proposals</span> <span class='verb core'>elected</span> <span class='non-core'>the young</span> <span class='object core'>entrepreneur</span> <span class='non-core'>with innovative ideas</span> <span class='complement core'>president</span> <span class='non-core'>of the organization</span>.",
+                    modifiers: ["The committee", "who had reviewed all proposals", "the young", "with innovative ideas", "of the organization"]
+                },
+                {
+                    sentence: "The researchers analyzing climate data for decades finally published their groundbreaking findings in Nature yesterday.",
+                    pattern: "SVO",
+                    skeleton: "Researchers published findings",
+                    components: {
+                        subject: "researchers",
+                        verb: "published",
+                        object: "findings"
+                    },
+                    markedSentence: "<span class='non-core'>The</span> <span class='subject core'>researchers</span> <span class='non-core'>analyzing climate data for decades</span> <span class='non-core'>finally</span> <span class='verb core'>published</span> <span class='non-core'>their groundbreaking</span> <span class='object core'>findings</span> <span class='non-core'>in Nature yesterday</span>.",
+                    modifiers: ["The", "analyzing climate data for decades", "finally", "their groundbreaking", "in Nature yesterday"]
+                }
+            ],
+            expert: [
+                {
+                    sentence: "Despite the challenging circumstances, the dedicated researchers who had been working tirelessly on quantum computing finally made their revolutionary discovery public at the international conference.",
+                    pattern: "SVOC",
+                    skeleton: "Researchers made discovery public",
+                    components: {
+                        subject: "researchers",
+                        verb: "made",
+                        object: "discovery",
+                        complement: "public"
+                    },
+                    markedSentence: "<span class='non-core'>Despite the challenging circumstances,</span> <span class='non-core'>the dedicated</span> <span class='subject core'>researchers</span> <span class='non-core'>who had been working tirelessly on quantum computing</span> <span class='non-core'>finally</span> <span class='verb core'>made</span> <span class='non-core'>their revolutionary</span> <span class='object core'>discovery</span> <span class='complement core'>public</span> <span class='non-core'>at the international conference</span>.",
+                    modifiers: ["Despite the challenging circumstances", "the dedicated", "who had been working tirelessly on quantum computing", "finally", "their revolutionary", "at the international conference"]
+                }
+            ]
         };
         
-        const challenge = fallbacks[difficulty] || fallbacks.medium;
+        const pool = fallbackPools[difficulty] || fallbackPools.medium;
+        const challenge = pool[Math.floor(Math.random() * pool.length)];
+        
         challenge.difficulty = difficulty;
         challenge.timeLimit = this.difficulties[difficulty].time;
         challenge.maxScore = this.calculateMaxScore(challenge);
@@ -277,6 +354,67 @@ class ChallengeMode {
      * 渲染句子单词
      */
     renderSentenceTokens() {
+        // 如果有标注的句子，优先使用
+        if (this.currentChallenge.markedSentence) {
+            // 解析标注的HTML，为每个单词添加交互
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = this.currentChallenge.markedSentence;
+            
+            let wordIndex = 0;
+            const processNode = (node) => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const words = node.textContent.trim().split(/\s+/);
+                    const fragment = document.createDocumentFragment();
+                    
+                    words.forEach((word, i) => {
+                        if (word) {
+                            const cleanWord = word.replace(/[.,!?;:]$/, '');
+                            const punctuation = word.match(/[.,!?;:]$/)?.[0] || '';
+                            
+                            const span = document.createElement('span');
+                            span.className = 'word-token';
+                            span.setAttribute('data-index', wordIndex++);
+                            span.setAttribute('data-word', cleanWord);
+                            
+                            // 从父元素继承标记类型
+                            if (node.parentElement && node.parentElement.classList.contains('core')) {
+                                span.setAttribute('data-core', 'true');
+                            }
+                            
+                            span.textContent = cleanWord;
+                            if (punctuation) {
+                                const punct = document.createElement('span');
+                                punct.className = 'punctuation';
+                                punct.textContent = punctuation;
+                                span.appendChild(punct);
+                            }
+                            
+                            fragment.appendChild(span);
+                            if (i < words.length - 1) {
+                                fragment.appendChild(document.createTextNode(' '));
+                            }
+                        }
+                    });
+                    
+                    return fragment;
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    const newNode = node.cloneNode(false);
+                    Array.from(node.childNodes).forEach(child => {
+                        const processed = processNode(child);
+                        if (processed) {
+                            newNode.appendChild(processed);
+                        }
+                    });
+                    return newNode;
+                }
+                return null;
+            };
+            
+            const processed = processNode(tempDiv);
+            return processed.innerHTML;
+        }
+        
+        // 降级方案：简单分词
         const words = this.currentChallenge.sentence.split(' ');
         return words.map((word, index) => {
             const cleanWord = word.replace(/[.,!?;:]/, '');
@@ -576,18 +714,32 @@ class ChallengeMode {
             this.isCompleted = true;
         }
         
-        // 标记正确答案
-        const skeleton = this.currentChallenge.skeleton.toLowerCase().split(' ');
-        const words = document.querySelectorAll('.word-token');
-        
-        words.forEach(token => {
-            const word = token.dataset.word.toLowerCase();
-            if (skeleton.includes(word)) {
-                token.classList.add('correct-answer');
-            } else {
-                token.classList.add('modifier');
-            }
-        });
+        // 使用标注信息显示答案
+        if (this.currentChallenge.markedSentence) {
+            // 重新渲染带有完整标注的句子
+            const sentenceContainer = document.getElementById('challenge-sentence');
+            sentenceContainer.innerHTML = this.currentChallenge.markedSentence
+                .replace(/class='subject core'/g, "class='word-token correct-answer subject-core'")
+                .replace(/class='verb core'/g, "class='word-token correct-answer verb-core'")
+                .replace(/class='object core'/g, "class='word-token correct-answer object-core'")
+                .replace(/class='complement core'/g, "class='word-token correct-answer complement-core'")
+                .replace(/class='indirect-object core'/g, "class='word-token correct-answer indirect-object-core'")
+                .replace(/class='non-core'/g, "class='word-token modifier'")
+                .replace(/<span/g, '<span style="display: inline-block; margin: 2px;"');
+        } else {
+            // 降级方案：基于骨干单词标记
+            const skeleton = this.currentChallenge.skeleton.toLowerCase().split(' ');
+            const words = document.querySelectorAll('.word-token');
+            
+            words.forEach(token => {
+                const word = token.dataset.word.toLowerCase();
+                if (skeleton.includes(word)) {
+                    token.classList.add('correct-answer');
+                } else {
+                    token.classList.add('modifier');
+                }
+            });
+        }
         
         // 显示答案解析
         const resultDiv = document.getElementById('challenge-result');
@@ -610,6 +762,8 @@ class ChallengeMode {
                     <p>${this.getPatternExplanation()}</p>
                 </div>
                 
+                ${this.renderColorLegend()}
+                
                 <button class="btn-next-challenge" onclick="challengeMode.nextChallenge()">
                     下一个挑战
                 </button>
@@ -623,6 +777,34 @@ class ChallengeMode {
         }
         
         resultDiv.style.display = 'block';
+    }
+    
+    /**
+     * 渲染颜色图例
+     */
+    renderColorLegend() {
+        return `
+            <div class="color-legend">
+                <h4>颜色说明：</h4>
+                <div class="legend-items">
+                    <span class="legend-item">
+                        <span class="color-box subject-core"></span>主语
+                    </span>
+                    <span class="legend-item">
+                        <span class="color-box verb-core"></span>谓语
+                    </span>
+                    <span class="legend-item">
+                        <span class="color-box object-core"></span>宾语
+                    </span>
+                    <span class="legend-item">
+                        <span class="color-box complement-core"></span>补语
+                    </span>
+                    <span class="legend-item">
+                        <span class="color-box modifier"></span>修饰语
+                    </span>
+                </div>
+            </div>
+        `;
     }
 
     /**

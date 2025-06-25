@@ -255,11 +255,35 @@
     padding: 4px 8px;
 }
 
+/* 成分颜色标记 */
 .word-token.correct-answer {
-    background: #10b981 !important;
-    color: white !important;
     padding: 4px 8px;
     animation: highlight 0.5s ease;
+}
+
+.word-token.subject-core {
+    background: #3b82f6 !important;
+    color: white !important;
+}
+
+.word-token.verb-core {
+    background: #10b981 !important;
+    color: white !important;
+}
+
+.word-token.object-core {
+    background: #f59e0b !important;
+    color: white !important;
+}
+
+.word-token.complement-core {
+    background: #8b5cf6 !important;
+    color: white !important;
+}
+
+.word-token.indirect-object-core {
+    background: #ec4899 !important;
+    color: white !important;
 }
 
 .word-token.modifier {
@@ -489,6 +513,61 @@
     border-radius: 8px;
     margin-bottom: 20px;
     color: #1e40af;
+}
+
+/* 颜色图例 */
+.color-legend {
+    background: #f9fafb;
+    padding: 16px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.color-legend h4 {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
+
+.legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.color-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.color-box.subject-core {
+    background: #3b82f6;
+}
+
+.color-box.verb-core {
+    background: #10b981;
+}
+
+.color-box.object-core {
+    background: #f59e0b;
+}
+
+.color-box.complement-core {
+    background: #8b5cf6;
+}
+
+.color-box.modifier {
+    background: #e5e7eb;
 }
 
 /* 按钮样式 */
