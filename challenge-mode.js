@@ -284,15 +284,19 @@ class ChallengeMode {
                 }
                 
                 // 提取AI的回复内容
-                const content = data.choices[0].message.content;
-                
-                // 尝试解析JSON部分
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    return jsonMatch[0];
+                if (data.choices && data.choices.length > 0) {
+                    const content = data.choices[0].message.content;
+                    
+                    // 尝试解析JSON部分
+                    const jsonMatch = content.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        return jsonMatch[0];
+                    }
+                    
+                    return content;
+                } else {
+                    throw new Error('AI response format error');
                 }
-                
-                return content;
             } catch (error) {
                 console.error('AI API call failed:', error);
                 throw error;
