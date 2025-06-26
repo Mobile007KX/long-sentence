@@ -84,7 +84,6 @@ ChallengeMode.prototype.showEnhancedResult = function(result) {
     // 禁用句子交互
     document.getElementById('challenge-sentence').style.pointerEvents = 'none';
 };
-};
 
 /**
  * 生成表现提示

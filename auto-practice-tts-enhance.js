@@ -21,7 +21,7 @@
     // 添加TTS相关属性到原型
     Object.assign(AutoPracticeMode.prototype, {
         ttsEnabled: true,
-        ttsEndpoint: 'http://localhost:5050/api/tts', // Kokoro TTS API endpoint - 使用5050端口
+        ttsEndpoint: 'http://localhost:5050/api/generate', // Kokoro TTS API endpoint - 正确的路径
         currentAudio: null,
         selectedVoice: 'zf_shishan', // 默认使用诗珊音色
         
