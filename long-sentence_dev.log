@@ -557,4 +557,36 @@
 - 英式发音：适合学习英式英语的用户
 - Michael声音最自然，适合长时间练习
 
+---## 2024-12-13 TTS英语声音配置修正
+
+### 问题发现
+- 之前从网上查到的声音（如am_adam, am_michael等）在kokoro-tts-zh项目中并不存在
+- 导致TTS请求失败，报CORS错误
+
+### 实际可用的英语声音
+通过检查 `/Users/yunboxiong/projects/kokoro-tts-zh/voices/` 目录，发现实际可用的英语声音是：
+- `af_maple` - 美式女声 Maple
+- `af_sol` - 美式女声 Sol  
+- `bf_vale` - 英式女声 Vale
+
+### 修正内容
+1. **默认声音**：改为 `af_maple`（美式女声）
+2. **API端点**：
+   - 生成语音：`http://localhost:5050/api/generate`
+   - 状态检查：`http://localhost:5050/api/status`
+3. **数据格式**：响应中的音频字段是 `audio_data`
+
+### 测试工具
+- 创建了 `test-tts-english.html` 用于测试各个英语声音
+- 可以验证TTS服务状态和声音生成功能
+
+### 使用说明
+1. 启动TTS服务：
+   ```bash
+   cd /Users/yunboxiong/projects/kokoro-tts-zh
+   python app.py
+   ```
+2. 服务运行在 http://localhost:5050
+3. 三个英语声音都是女声，发音清晰标准
+
 ---
