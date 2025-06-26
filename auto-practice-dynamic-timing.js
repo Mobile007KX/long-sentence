@@ -53,7 +53,7 @@
         extraTime += longWords * 300; // 每个长词额外300ms（从200ms增加）
         
         // 添加固定的停留时间（读完后的缓冲）
-        const pauseTime = 3000; // 3秒停留时间
+        const pauseTime = 1500; // 1.5秒停留时间（从3秒减少）
         
         // 最终时间计算
         const timings = {

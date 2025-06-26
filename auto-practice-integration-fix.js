@@ -62,7 +62,8 @@
                 hintEl.style.display = 'block';
             }
             
-            // 等待后开始渐进展示
+            // 等待后开始渐进展示 - 缩短等待时间
+            const waitTime = Math.min(timing * 0.5, 5000); // 使用一半时间，最多5秒
             setTimeout(() => {
                 // 停止音频
                 if (typeof this.stopAudio === 'function') {
@@ -106,7 +107,7 @@
                     // 降级到简单显示
                     this.displaySentenceSimple(container);
                 }
-            }, timing);
+            }, waitTime);
         };
         
         // 修复TTS生成函数（确保使用正确的参数）

@@ -8,7 +8,7 @@ class ProgressiveAnswerDisplayV2 {
         this.currentStage = 0;
         this.maxStage = 4;
         this.autoPlayInterval = null;
-        this.displaySpeed = 2500; // 从3000ms优化为2500ms
+        this.displaySpeed = 2000; // 从2500ms优化为2000ms
         
         // 阶段说明文字
         this.stageExplanations = {
@@ -46,7 +46,7 @@ class ProgressiveAnswerDisplayV2 {
         // 自动开始渐进展示
         setTimeout(() => {
             this.autoPlay();
-        }, 300);
+        }, 100);
     }
 
     /**
