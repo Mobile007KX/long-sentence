@@ -527,4 +527,34 @@
 - 长句（50词）：约12-18秒
 - 复杂句（70词+从句）：约15-20秒
 
+---## 2024-12-13 TTS声音优化 - 使用标准英语发音
+
+### 问题
+- 原始TTS使用中文口音的英语声音
+- 用户反馈：发音不够标准，影响学习效果
+
+### 解决方案
+更换为Kokoro TTS的标准英语声音：
+
+**美式英语：**
+- am_michael - Michael (Natural) - 默认选择
+- am_adam - Adam (Clear)
+
+**英式英语：**
+- bf_emma - Emma (Elegant)
+- bf_isabella - Isabella (Professional)
+- bm_george - George (Distinguished)
+- bm_lewis - Lewis (Friendly)
+
+### 技术改进
+1. 更新默认声音为 `am_michael`
+2. 替换声音选择列表为英语选项
+3. 添加 `language: 'en'` 参数确保英语发音模式
+4. 界面文字调整为英文
+
+### 使用建议
+- 美式发音：适合学习美式英语的用户
+- 英式发音：适合学习英式英语的用户
+- Michael声音最自然，适合长时间练习
+
 ---
