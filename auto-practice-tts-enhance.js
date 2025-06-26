@@ -1,15 +1,17 @@
 /**
- * 自动练习模式TTS增强补丁
- * 为原始的auto-practice-mode.js添加TTS支持
+ * 自动练习模式 - TTS增强 - 使用标准英语声音
+ * 集成TTS语音朗读功能
  */
 
 (function() {
-    // 确保AutoPracticeMode存在
+    'use strict';
+    
+    // 确保AutoPracticeMode已经加载
     if (typeof AutoPracticeMode === 'undefined') {
-        console.error('AutoPracticeMode not found!');
+        console.error('AutoPracticeMode not found. Please load auto-practice-mode.js first.');
         return;
     }
-
+    
     // 保存原始方法
     const originalInit = AutoPracticeMode.prototype.initializeUI;
     const originalStart = AutoPracticeMode.prototype.start;
@@ -17,41 +19,51 @@
     const originalDisplayProgressive = AutoPracticeMode.prototype.displaySentenceProgressive;
     const originalDisplayInstant = AutoPracticeMode.prototype.displaySentenceInstant;
     const originalDisplaySimple = AutoPracticeMode.prototype.displaySentenceSimple;
-
-    // 添加TTS相关属性到原型
+    
+    // 添加TTS相关属性
     Object.assign(AutoPracticeMode.prototype, {
         ttsEnabled: true,
-        ttsEndpoint: 'http://localhost:5050/api/generate', // Kokoro TTS API endpoint - 正确的路径
-        currentAudio: null,
-        selectedVoice: 'zf_001', // 默认使用女声001
+        ttsEndpoint: 'http://localhost:5050/api/tts',
+        ttsAudio: null,
+        selectedVoice: 'am_michael', // 默认使用美式男声Michael
         
         // 增强的时间设置 - 原句停留时间更长
-        enhancedTimings: {
+        stageTimings: {
             slow: {
-                original: 10000,    // 原句10秒
-                other: 5000        // 其他阶段5秒
+                original: 10000,    // 原句10秒（让用户有时间分析）
+                skeleton: 5000,     // 主干5秒
+                clauses: 5000,      // 从句5秒
+                adverbs: 5000,      // 状语5秒
+                complete: 8000      // 完整8秒
             },
             normal: {
                 original: 7000,     // 原句7秒
-                other: 3000        // 其他阶段3秒
+                skeleton: 3000,     // 主干3秒
+                clauses: 3000,      // 从句3秒
+                adverbs: 3000,      // 状语3秒
+                complete: 5000      // 完整5秒
             },
             fast: {
                 original: 5000,     // 原句5秒
-                other: 2000        // 其他阶段2秒
+                skeleton: 1500,     // 主干1.5秒
+                clauses: 1500,      // 从句1.5秒
+                adverbs: 1500,      // 状语1.5秒
+                complete: 2500      // 完整2.5秒
             }
         }
     });
-
-    // 增强初始化UI方法，添加TTS控制
+    
+    // 增强初始化UI方法
     AutoPracticeMode.prototype.initializeUI = function(container) {
         // 调用原始方法
         originalInit.call(this, container);
         
-        // 在控制面板后添加TTS设置
+        // 添加TTS控制区域
         const controlPanel = container.querySelector('.control-panel');
         if (controlPanel) {
-            const ttsSettingsHtml = `
-                <div class="tts-settings" style="margin: 20px 0; padding: 20px; background: #f3f0ff; border-radius: 12px;">
+            const ttsControlHtml = `
+                <!-- TTS控制 -->
+                <div class="tts-controls" style="margin-top: 20px; padding: 15px; background: #f8f8f8; border-radius: 8px;">
                     <div style="display: flex; align-items: center; justify-content: center; gap: 30px;">
                         <div class="tts-toggle" style="display: flex; align-items: center; gap: 12px;">
                             <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 26px;">
@@ -60,31 +72,30 @@
                                     <span style="position: absolute; content: ''; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;"></span>
                                 </span>
                             </label>
-                            <span>启用语音朗读</span>
+                            <span>Enable Voice</span>
                         </div>
                         
-                        <div class="voice-selector" id="voice-selector">
-                            <label>选择音色：</label>
-                            <select id="voice-select" style="padding: 8px 16px; border: 2px solid #e5e7eb; border-radius: 8px;">
-                                <optgroup label="女声">
-                                    <option value="zf_001" selected>女声001（温柔）</option>
-                                    <option value="zf_002">女声002（清新）</option>
-                                    <option value="zf_003">女声003（活泼）</option>
-                                    <option value="zf_004">女声004（知性）</option>
-                                    <option value="zf_005">女声005（甜美）</option>
+                        <div class="voice-selector" id="voice-selector" style="display: flex; align-items: center; gap: 12px;">
+                            <label>Voice:</label>
+                            <select id="voice-select" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ddd;">
+                                <optgroup label="American English">
+                                    <option value="am_michael" selected>Michael (Natural)</option>
+                                    <option value="am_adam">Adam (Clear)</option>
                                 </optgroup>
-                                <optgroup label="男声">
-                                    <option value="zm_009">男声009（成熟）</option>
-                                    <option value="zm_010">男声010（阳光）</option>
-                                    <option value="zm_011">男声011（稳重）</option>
-                                    <option value="zm_012">男声012（磁性）</option>
+                                <optgroup label="British English">
+                                    <option value="bf_emma">Emma (Elegant)</option>
+                                    <option value="bf_isabella">Isabella (Professional)</option>
+                                    <option value="bm_george">George (Distinguished)</option>
+                                    <option value="bm_lewis">Lewis (Friendly)</option>
                                 </optgroup>
                             </select>
                         </div>
                     </div>
                     
-                    <div class="tts-status" id="tts-status" style="display: none; margin-top: 15px; padding: 10px; background: #fef3c7; border-radius: 8px; text-align: center;">
-                        <span style="color: #92400e;">🔊 TTS服务未连接</span>
+                    <!-- TTS服务状态 -->
+                    <div class="tts-status" id="tts-status" style="display: none; margin-top: 10px; text-align: center; color: #d97706;">
+                        <span class="status-icon">⚠️</span>
+                        <span class="status-text">TTS service is not running. Voice reading will be disabled.</span>
                     </div>
                 </div>
             `;
@@ -92,15 +103,18 @@
             // 在主控制按钮前插入
             const mainControls = controlPanel.querySelector('.main-controls');
             if (mainControls) {
-                mainControls.insertAdjacentHTML('beforebegin', ttsSettingsHtml);
+                mainControls.insertAdjacentHTML('beforebegin', ttsControlHtml);
             }
             
             // 添加音频元素
             if (!document.getElementById('tts-audio')) {
-                container.insertAdjacentHTML('beforeend', '<audio id="tts-audio" style="display: none;"></audio>');
+                const audioEl = document.createElement('audio');
+                audioEl.id = 'tts-audio';
+                audioEl.style.display = 'none';
+                document.body.appendChild(audioEl);
             }
             
-            // 绑定TTS事件
+            // 绑定事件
             this.bindTTSEvents();
             
             // 检查TTS服务
@@ -109,23 +123,23 @@
         
         // 添加倒计时显示
         const displayArea = container.querySelector('.sentence-display-area');
-        if (displayArea && !document.getElementById('stage-hint')) {
-            displayArea.insertAdjacentHTML('beforeend', `
-                <div class="stage-hint" id="stage-hint" style="display: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 24px;">
-                    <span class="hint-text">原句展示中，请仔细分析句子结构...</span>
-                    <span class="countdown" id="countdown" style="margin-left: 16px; font-weight: bold; color: #fbbf24;"></span>
+        if (displayArea) {
+            const hintHtml = `
+                <div class="stage-hint" id="stage-hint" style="display: none;">
+                    <span class="countdown-text"></span>
                 </div>
-            `);
+            `;
+            displayArea.insertAdjacentHTML('beforeend', hintHtml);
         }
     };
-
+    
     // 绑定TTS事件
     AutoPracticeMode.prototype.bindTTSEvents = function() {
         const ttsToggle = document.getElementById('tts-enable');
         if (ttsToggle) {
             ttsToggle.addEventListener('change', (e) => {
                 this.ttsEnabled = e.target.checked;
-                document.getElementById('voice-selector').style.opacity = this.ttsEnabled ? '1' : '0.5';
+                document.getElementById('voice-selector').style.opacity = e.target.checked ? '1' : '0.5';
             });
             
             // 初始化开关样式
@@ -148,17 +162,17 @@
             });
         }
     };
-
+    
     // 检查TTS服务
     AutoPracticeMode.prototype.checkTTSService = async function() {
         try {
             const response = await fetch('http://localhost:5050/api/status', {
                 method: 'GET',
-                mode: 'cors'
+                signal: AbortSignal.timeout(2000)
             });
             
             if (response.ok) {
-                console.log('✅ Kokoro TTS服务已连接');
+                console.log('✅ TTS service is running');
                 const statusEl = document.getElementById('tts-status');
                 if (statusEl) {
                     statusEl.style.display = 'none';
@@ -166,16 +180,16 @@
                 return true;
             }
         } catch (error) {
-            console.warn('⚠️ Kokoro TTS服务未启动');
+            console.warn('TTS service not available:', error.message);
             const statusEl = document.getElementById('tts-status');
             if (statusEl) {
                 statusEl.style.display = 'block';
-                statusEl.innerHTML = '<span style="color: #92400e;">🔊 TTS服务未启动（请运行 start-tts.sh）</span>';
+                statusEl.innerHTML = '<span class="status-icon">⚠️</span><span class="status-text">TTS service is not running. Voice reading will be disabled.</span>';
             }
         }
         return false;
     };
-
+    
     // 生成TTS语音
     AutoPracticeMode.prototype.generateTTS = async function(text) {
         if (!this.ttsEnabled || !text) return;
@@ -189,89 +203,98 @@
                 body: JSON.stringify({
                     text: text,
                     voice: this.selectedVoice,
-                    language: 'zh'  // 添加语言参数
+                    language: 'en'  // 明确指定英语
                 })
             });
             
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.error || 'TTS生成失败');
+                throw new Error(error.error || 'TTS generation failed');
             }
             
             const data = await response.json();
             
-            if (data.success && data.audio_data) {
-                // 播放音频 - 注意是audio_data不是audio_base64
-                this.playAudioFromDataURL(data.audio_data);
+            // 播放音频
+            if (data.audio) {
+                this.playAudio(data.audio);
             }
         } catch (error) {
-            console.error('TTS错误:', error);
+            console.error('TTS error:', error);
             // 静默失败，不影响文本展示
         }
     };
-
+    
     // 播放音频（从data URL）
-    AutoPracticeMode.prototype.playAudioFromDataURL = function(audioDataURL) {
-        const audio = document.getElementById('tts-audio');
-        if (audio) {
-            // 停止当前播放
-            audio.pause();
-            
-            // 直接设置data URL
-            audio.src = audioDataURL;
-            
-            // 播放
-            audio.play().catch(err => {
-                console.error('音频播放失败:', err);
-            });
-            
-            this.currentAudio = audio;
-        }
+    AutoPracticeMode.prototype.playAudio = function(audioDataUrl) {
+        if (!audioDataUrl || !this.ttsEnabled) return;
+        
+        // 停止当前播放
+        this.stopAudio();
+        
+        // 直接设置data URL
+        this.ttsAudio = new Audio(audioDataUrl);
+        
+        // 播放
+        this.ttsAudio.play().catch(err => {
+            console.error('Audio playback failed:', err);
+        });
+        
+        this.ttsAudio.addEventListener('ended', () => {
+            this.ttsAudio = null;
+        });
     };
-
+    
     // 停止音频
     AutoPracticeMode.prototype.stopAudio = function() {
-        if (this.currentAudio) {
-            this.currentAudio.pause();
-            this.currentAudio.currentTime = 0;
+        if (this.ttsAudio) {
+            this.ttsAudio.pause();
+            this.ttsAudio = null;
         }
     };
-
-    // 倒计时
+    
+    // 开始倒计时
     AutoPracticeMode.prototype.startCountdown = function(seconds) {
-        const countdownEl = document.getElementById('countdown');
         const hintEl = document.getElementById('stage-hint');
+        if (!hintEl) return;
         
-        if (!countdownEl || !hintEl) return;
+        const countdownEl = hintEl.querySelector('.countdown-text');
+        if (!countdownEl) return;
         
-        hintEl.style.display = 'block';
         let remaining = seconds;
-        countdownEl.textContent = `${remaining}秒`;
         
-        const countdownInterval = setInterval(() => {
+        // 清除之前的倒计时
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+        }
+        
+        // 更新显示
+        const updateDisplay = () => {
+            countdownEl.textContent = `Reading time: ${remaining}s`;
+        };
+        
+        updateDisplay();
+        
+        // 开始倒计时
+        this.countdownInterval = setInterval(() => {
             remaining--;
             if (remaining >= 0) {
-                countdownEl.textContent = `${remaining}秒`;
+                updateDisplay();
             } else {
-                clearInterval(countdownInterval);
-                hintEl.style.display = 'none';
+                clearInterval(this.countdownInterval);
             }
         }, 1000);
-        
-        // 保存interval以便清理
-        this.countdownInterval = countdownInterval;
     };
-
-    // 增强的渐进显示
+    
+    // 增强渐进式显示
     AutoPracticeMode.prototype.displaySentenceProgressive = function() {
         const container = document.getElementById('auto-sentence-display');
-        const timing = this.enhancedTimings[this.config.speed] || this.enhancedTimings.normal;
+        this.currentStage = 0;
         
-        // 先显示原句
+        // 先显示原句并播放TTS
         container.innerHTML = `
-            <div class="original-sentence-display" style="text-align: center; padding: 40px;">
-                <div class="stage-label" style="font-size: 16px; color: #6b7280; margin-bottom: 30px;">原始句子</div>
-                <div class="sentence-text" style="font-size: 32px; line-height: 1.8; color: #1a1a1a;">${this.currentSentence.sentence}</div>
+            <div class="original-sentence-display">
+                <div class="stage-label">Original Sentence</div>
+                <div class="sentence-text">${this.currentSentence.sentence}</div>
             </div>
         `;
         
@@ -279,7 +302,7 @@
         this.generateTTS(this.currentSentence.sentence);
         
         // 开始倒计时
-        this.startCountdown(timing.original / 1000);
+        this.startCountdown(this.stageTimings[this.config.speed].original / 1000);
         
         // 等待后继续原来的逻辑
         setTimeout(() => {
@@ -287,19 +310,19 @@
             if (originalDisplayProgressive) {
                 originalDisplayProgressive.call(this);
             }
-        }, timing.original);
+        }, this.stageTimings[this.config.speed].original);
     };
-
-    // 增强的即时显示
+    
+    // 增强直接显示
     AutoPracticeMode.prototype.displaySentenceInstant = function() {
         const container = document.getElementById('auto-sentence-display');
-        const timing = this.enhancedTimings[this.config.speed] || this.enhancedTimings.normal;
+        const timing = this.stageTimings[this.config.speed];
         
         // 先显示原句
         container.innerHTML = `
-            <div class="original-sentence-display" style="text-align: center; padding: 40px;">
-                <div class="stage-label" style="font-size: 16px; color: #6b7280; margin-bottom: 30px;">原始句子</div>
-                <div class="sentence-text" style="font-size: 32px; line-height: 1.8; color: #1a1a1a;">${this.currentSentence.sentence}</div>
+            <div class="original-sentence-display">
+                <div class="stage-label">Original Sentence</div>
+                <div class="sentence-text">${this.currentSentence.sentence}</div>
             </div>
         `;
         
@@ -317,7 +340,7 @@
             }
         }, timing.original);
     };
-
+    
     // 增强停止方法
     AutoPracticeMode.prototype.stop = function() {
         // 停止音频
@@ -333,6 +356,6 @@
             originalStop.call(this);
         }
     };
-
-    console.log('✅ AutoPracticeMode TTS增强加载完成');
+    
+    console.log('✅ TTS Enhancement (English Voices) loaded successfully');
 })();

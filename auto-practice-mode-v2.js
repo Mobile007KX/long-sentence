@@ -17,7 +17,7 @@ class AutoPracticeModeV2 {
         this.ttsEnabled = true;
         this.ttsEndpoint = 'http://localhost:5000/generate'; // Kokoro TTS API
         this.currentAudio = null;
-        this.selectedVoice = 'zf_shishan'; // 默认女声
+        this.selectedVoice = 'am_michael'; // 默认使用美式英语男声
         
         // 配置选项
         this.config = {
@@ -65,16 +65,17 @@ class AutoPracticeModeV2 {
             }
         };
         
-        // 可用的TTS音色
+        // 可用的TTS音色 - 标准英语声音
         this.availableVoices = {
-            female: [
-                { id: 'zf_shishan', name: '诗珊', desc: '温柔知性' },
-                { id: 'zf_xiaofang', name: '小芳', desc: '活泼可爱' },
-                { id: 'zf_xiaoling', name: '小玲', desc: '清新自然' }
+            american: [
+                { id: 'am_michael', name: 'Michael', desc: 'Natural American Male' },
+                { id: 'am_adam', name: 'Adam', desc: 'Clear American Male' }
             ],
-            male: [
-                { id: 'zm_haozi', name: '浩子', desc: '成熟稳重' },
-                { id: 'zm_xiaoyu', name: '小宇', desc: '年轻阳光' }
+            british: [
+                { id: 'bf_emma', name: 'Emma', desc: 'Elegant British Female' },
+                { id: 'bf_isabella', name: 'Isabella', desc: 'Professional British Female' },
+                { id: 'bm_george', name: 'George', desc: 'Distinguished British Male' },
+                { id: 'bm_lewis', name: 'Lewis', desc: 'Friendly British Male' }
             ]
         };
     }
@@ -130,20 +131,21 @@ class AutoPracticeModeV2 {
                                 <input type="checkbox" id="tts-enable" checked>
                                 <span class="slider"></span>
                             </label>
-                            <span>启用语音朗读</span>
+                            <span>Enable Voice</span>
                         </div>
                         
                         <div class="voice-selector" id="voice-selector">
-                            <label>选择音色：</label>
+                            <label>Voice:</label>
                             <select id="voice-select">
-                                <optgroup label="女声">
-                                    <option value="zf_shishan" selected>诗珊（温柔知性）</option>
-                                    <option value="zf_xiaofang">小芳（活泼可爱）</option>
-                                    <option value="zf_xiaoling">小玲（清新自然）</option>
+                                <optgroup label="American English">
+                                    <option value="am_michael" selected>Michael (Natural)</option>
+                                    <option value="am_adam">Adam (Clear)</option>
                                 </optgroup>
-                                <optgroup label="男声">
-                                    <option value="zm_haozi">浩子（成熟稳重）</option>
-                                    <option value="zm_xiaoyu">小宇（年轻阳光）</option>
+                                <optgroup label="British English">
+                                    <option value="bf_emma">Emma (Elegant)</option>
+                                    <option value="bf_isabella">Isabella (Professional)</option>
+                                    <option value="bm_george">George (Distinguished)</option>
+                                    <option value="bm_lewis">Lewis (Friendly)</option>
                                 </optgroup>
                             </select>
                         </div>
@@ -311,7 +313,8 @@ class AutoPracticeModeV2 {
                     text: text,
                     voice: this.config.ttsVoice,
                     speed: 1.0,
-                    save_audio: false
+                    save_audio: false,
+                    language: 'en'  // 明确指定英语
                 })
             });
             
