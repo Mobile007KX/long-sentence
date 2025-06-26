@@ -7,127 +7,161 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 600px;
             margin: 50px auto;
             padding: 20px;
+            background: #f5f5f5;
         }
+        
         .test-section {
-            margin: 20px 0;
+            background: white;
             padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        
         button {
-            padding: 10px 20px;
-            margin: 5px;
             background: #5B21B6;
             color: white;
             border: none;
-            border-radius: 5px;
+            padding: 10px 20px;
+            border-radius: 6px;
             cursor: pointer;
+            margin-right: 10px;
+            font-size: 16px;
         }
+        
         button:hover {
-            background: #6D28D9;
+            background: #4C1D95;
         }
+        
         .status {
-            margin: 10px 0;
+            margin-top: 10px;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 4px;
+            font-size: 14px;
         }
+        
         .success {
-            background: #d4edda;
-            color: #155724;
+            background: #d1fae5;
+            color: #065f46;
         }
+        
         .error {
-            background: #f8d7da;
-            color: #721c24;
+            background: #fee2e2;
+            color: #991b1b;
         }
-        #log {
-            background: #f5f5f5;
+        
+        .info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .log {
+            background: #f3f4f6;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 4px;
+            margin-top: 10px;
             font-family: monospace;
             font-size: 12px;
-            max-height: 300px;
+            max-height: 200px;
             overflow-y: auto;
         }
     </style>
 </head>
 <body>
-    <h1>TTS服务测试</h1>
+    <h1>TTS服务测试页面</h1>
     
     <div class="test-section">
-        <h3>1. 检查TTS服务状态</h3>
+        <h2>1. 检查TTS服务状态</h2>
         <button onclick="checkService()">检查服务</button>
         <div id="service-status"></div>
     </div>
     
     <div class="test-section">
-        <h3>2. 测试简单TTS请求</h3>
-        <button onclick="testSimpleTTS()">测试TTS</button>
+        <h2>2. 测试TTS播放</h2>
+        <input type="text" id="test-text" value="Hello, this is a test of the TTS service." style="width: 100%; padding: 8px; margin-bottom: 10px;">
+        <button onclick="testTTS()">测试TTS</button>
         <div id="tts-status"></div>
     </div>
     
     <div class="test-section">
-        <h3>3. 测试自动练习TTS</h3>
-        <button onclick="testAutoPracticeTTS()">测试自动练习TTS</button>
-        <div id="auto-status"></div>
+        <h2>3. 测试长句子</h2>
+        <button onclick="testLongSentence()">测试长句子</button>
+        <div id="long-status"></div>
     </div>
     
     <div class="test-section">
-        <h3>控制台日志</h3>
-        <div id="log"></div>
+        <h2>控制台日志</h2>
+        <div id="console-log" class="log"></div>
     </div>
-
+    
     <script>
-        // 日志函数
-        function log(message) {
-            const logDiv = document.getElementById('log');
-            const time = new Date().toLocaleTimeString();
-            logDiv.innerHTML += `[${time}] ${message}<br>`;
+        // 捕获控制台输出
+        const logDiv = document.getElementById('console-log');
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog(...args);
+            addLog('LOG', args);
+        };
+        
+        console.error = function(...args) {
+            originalError(...args);
+            addLog('ERROR', args);
+        };
+        
+        function addLog(type, args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+            ).join(' ');
+            
+            logDiv.innerHTML += `<div><strong>[${timestamp}] ${type}:</strong> ${message}</div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
-            console.log(message);
         }
         
-        // 检查TTS服务
+        // TTS端点
+        const TTS_ENDPOINT = 'http://localhost:5050/api/generate';
+        
+        // 检查服务
         async function checkService() {
             const statusDiv = document.getElementById('service-status');
-            log('Checking TTS service...');
+            statusDiv.innerHTML = '<div class="status info">正在检查服务...</div>';
             
             try {
-                const response = await fetch('http://localhost:5050/api/status');
+                const response = await fetch('http://localhost:5050/health');
                 if (response.ok) {
                     const data = await response.json();
-                    statusDiv.className = 'status success';
-                    statusDiv.innerHTML = `✅ 服务正常运行<br>
-                        模型加载: ${data.model_loaded}<br>
-                        设备: ${data.device}<br>
-                        总音色: ${data.total_voices}`;
-                    log('Service check successful');
+                    statusDiv.innerHTML = '<div class="status success">✅ TTS服务正在运行！' + JSON.stringify(data) + '</div>';
+                    console.log('Service check successful:', data);
                 } else {
-                    throw new Error('Service not responding');
+                    throw new Error(`HTTP ${response.status}`);
                 }
             } catch (error) {
-                statusDiv.className = 'status error';
-                statusDiv.innerHTML = `❌ 服务未运行: ${error.message}<br>
-                    请运行: cd /Users/yunboxiong/projects/kokoro-tts-zh && python app.py`;
-                log('Service check failed: ' + error.message);
+                statusDiv.innerHTML = `<div class="status error">❌ TTS服务未运行或无法连接<br>错误: ${error.message}<br><br>请在终端运行:<br><code>cd /Users/yunboxiong/projects/kokoro-tts-zh && python app.py</code></div>`;
+                console.error('Service check failed:', error);
             }
         }
         
-        // 测试简单TTS
-        async function testSimpleTTS() {
+        // 测试TTS
+        async function testTTS() {
+            const text = document.getElementById('test-text').value;
             const statusDiv = document.getElementById('tts-status');
-            log('Testing simple TTS...');
+            statusDiv.innerHTML = '<div class="status info">正在生成语音...</div>';
             
             try {
-                const response = await fetch('http://localhost:5050/api/generate', {
+                console.log('Sending TTS request:', { text, voice: 'af_maple' });
+                
+                const response = await fetch(TTS_ENDPOINT, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        text: "This is a test of the text to speech system.",
+                        text: text,
                         voice: 'af_maple',
                         language: 'en'
                     })
@@ -138,93 +172,49 @@
                 }
                 
                 const data = await response.json();
-                log('TTS response received');
+                console.log('TTS response:', data);
                 
                 if (data.audio_data) {
+                    statusDiv.innerHTML = '<div class="status info">正在播放音频...</div>';
+                    
                     const audio = new Audio(data.audio_data);
                     
-                    audio.onended = () => {
-                        log('Audio playback completed');
-                        statusDiv.innerHTML += '<br>✅ 播放完成';
+                    audio.onplay = () => {
+                        statusDiv.innerHTML = '<div class="status success">🔊 音频正在播放...</div>';
+                        console.log('Audio started playing');
                     };
                     
-                    audio.onerror = (e) => {
-                        log('Audio error: ' + e);
-                        statusDiv.innerHTML += '<br>❌ 播放错误';
+                    audio.onended = () => {
+                        statusDiv.innerHTML += '<div class="status success">✅ 音频播放完成！</div>';
+                        console.log('Audio playback completed');
+                    };
+                    
+                    audio.onerror = (error) => {
+                        statusDiv.innerHTML = '<div class="status error">❌ 音频播放失败</div>';
+                        console.error('Audio playback error:', error);
                     };
                     
                     await audio.play();
-                    statusDiv.className = 'status success';
-                    statusDiv.innerHTML = '✅ TTS生成成功，正在播放...';
-                    log('Audio playing');
                 } else {
-                    throw new Error('No audio data');
+                    throw new Error('No audio data in response');
                 }
             } catch (error) {
-                statusDiv.className = 'status error';
-                statusDiv.innerHTML = `❌ TTS失败: ${error.message}`;
-                log('TTS failed: ' + error.message);
+                statusDiv.innerHTML = `<div class="status error">❌ TTS失败: ${error.message}</div>`;
+                console.error('TTS error:', error);
             }
         }
         
-        // 测试自动练习TTS
-        async function testAutoPracticeTTS() {
-            const statusDiv = document.getElementById('auto-status');
-            log('Testing auto practice TTS...');
+        // 测试长句子
+        async function testLongSentence() {
+            const longText = "The brilliant scientists who had been working tirelessly in their state-of-the-art laboratory finally discovered the revolutionary cure.";
+            document.getElementById('test-text').value = longText;
             
-            // 模拟自动练习模式
-            const mockAutoMode = {
-                ttsEnabled: true,
-                selectedVoice: 'af_maple',
-                ttsEndpoint: 'http://localhost:5050/api/generate'
-            };
+            const statusDiv = document.getElementById('long-status');
+            statusDiv.innerHTML = '<div class="status info">测试长句子...</div>';
             
-            try {
-                const text = "Advanced scientific research involves complex experiments.";
-                log(`Generating TTS for: "${text}"`);
-                
-                const response = await fetch(mockAutoMode.ttsEndpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        text: text,
-                        voice: mockAutoMode.selectedVoice,
-                        language: 'en'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.audio_data) {
-                    const audio = new Audio(data.audio_data);
-                    
-                    const playPromise = new Promise((resolve, reject) => {
-                        audio.onended = () => {
-                            log('Auto practice audio completed');
-                            resolve();
-                        };
-                        
-                        audio.onerror = reject;
-                        
-                        audio.play().then(() => {
-                            log('Auto practice audio playing');
-                        }).catch(reject);
-                    });
-                    
-                    await playPromise;
-                    
-                    statusDiv.className = 'status success';
-                    statusDiv.innerHTML = '✅ 自动练习TTS测试成功';
-                } else {
-                    throw new Error('No audio data');
-                }
-            } catch (error) {
-                statusDiv.className = 'status error';
-                statusDiv.innerHTML = `❌ 测试失败: ${error.message}`;
-                log('Auto practice TTS failed: ' + error.message);
-            }
+            await testTTS();
+            
+            statusDiv.innerHTML = '<div class="status success">长句子测试已触发，请查看上方结果</div>';
         }
         
         // 页面加载时自动检查服务
