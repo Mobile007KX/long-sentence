@@ -1,0 +1,173 @@
+/* 自动练习模式平滑显示样式 */
+
+/* 句子显示包装器 */
+.sentence-display-wrapper {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+/* 主句子显示 - 固定大字体 */
+#main-sentence,
+.sentence-display.progressive-display {
+    font-size: 28px !important;
+    line-height: 2.2 !important;
+    text-align: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 单词基础样式 */
+.sentence-display .word-token {
+    display: inline-block;
+    margin: 0 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    position: relative;
+    background: transparent;
+    border-bottom: 3px solid transparent;
+}
+
+/* 阶段0 - 原句（无标记） */
+.stage-0 .word-token {
+    color: #333;
+    background: transparent;
+}
+
+/* 阶段1 - 主干高亮 */
+.stage-1 .word-token {
+    color: #999;
+    opacity: 0.5;
+}
+
+.stage-1 .word-token.subject.is-core,
+.stage-1 .word-token.verb,
+.stage-1 .word-token.object.is-core,
+.stage-1 .word-token.complement {
+    color: #333;
+    opacity: 1;
+    font-weight: 700;
+    border-bottom-color: currentColor;
+}
+
+.stage-1 .word-token.subject.is-core {
+    color: #3b82f6;
+}
+
+.stage-1 .word-token.verb {
+    color: #ef4444;
+}
+
+.stage-1 .word-token.object.is-core {
+    color: #22c55e;
+}
+
+/* 阶段2 - 显示从句 */
+.stage-2 .word-token.in-relative-clause {
+    background: rgba(139, 92, 246, 0.15);
+    color: #333;
+    opacity: 1;
+}
+
+/* 阶段3 - 显示状语 */
+.stage-3 .word-token.adverb {
+    background: rgba(251, 146, 60, 0.15);
+    color: #333;
+    opacity: 1;
+}
+
+/* 阶段4 - 完整展示 */
+.stage-4 .word-token {
+    opacity: 1;
+    color: #333;
+}
+
+.stage-4 .word-token.subject { 
+    background: rgba(59, 130, 246, 0.2);
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.stage-4 .word-token.verb { 
+    background: rgba(239, 68, 68, 0.2);
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.stage-4 .word-token.object { 
+    background: rgba(34, 197, 94, 0.2);
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.stage-4 .word-token.complement { 
+    background: rgba(168, 85, 247, 0.2);
+    color: #9333ea;
+    font-weight: 600;
+}
+
+.stage-4 .word-token.in-relative-clause {
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.stage-4 .word-token.adverb {
+    background: rgba(251, 146, 60, 0.15);
+}
+
+/* 标点符号样式 */
+.punctuation {
+    margin-left: -4px;
+    color: #666;
+    font-weight: normal;
+}
+
+/* 阶段标签 */
+.stage-label {
+    font-size: 14px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+/* 句子统计信息 */
+.sentence-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666;
+}
+
+/* 播放状态 */
+.playback-status {
+    font-size: 14px;
+    color: #666;
+    margin-top: 15px;
+}
+
+/* 确保在自动练习模式中的样式优先级 */
+#auto-sentence-display .sentence-display {
+    font-size: 28px !important;
+    line-height: 2.2 !important;
+}
+
+#auto-sentence-display .word-token {
+    font-size: inherit !important;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    #main-sentence,
+    .sentence-display.progressive-display {
+        font-size: 22px !important;
+        line-height: 2 !important;
+    }
+    
+    .sentence-display .word-token {
+        margin: 0 2px;
+        padding: 2px 4px;
+    }
+}
