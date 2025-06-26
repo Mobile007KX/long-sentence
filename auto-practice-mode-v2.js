@@ -15,9 +15,9 @@ class AutoPracticeModeV2 {
         
         // TTS配置
         this.ttsEnabled = true;
-        this.ttsEndpoint = 'http://localhost:5000/generate'; // Kokoro TTS API
+        this.ttsEndpoint = 'http://localhost:5050/api/generate'; // Kokoro TTS API 正确端点
         this.currentAudio = null;
-        this.selectedVoice = 'am_michael'; // 默认使用美式英语男声
+        this.selectedVoice = 'af_maple'; // 默认使用美式英语女声Maple
         
         // 配置选项
         this.config = {
@@ -65,17 +65,21 @@ class AutoPracticeModeV2 {
             }
         };
         
-        // 可用的TTS音色 - 标准英语声音
+        // 可用的TTS音色 - kokoro-tts-zh项目中实际可用的声音
         this.availableVoices = {
-            american: [
-                { id: 'am_michael', name: 'Michael', desc: 'Natural American Male' },
-                { id: 'am_adam', name: 'Adam', desc: 'Clear American Male' }
+            english: [
+                { id: 'af_maple', name: 'Maple', desc: 'American Female' },
+                { id: 'af_sol', name: 'Sol', desc: 'American Female' },
+                { id: 'bf_vale', name: 'Vale', desc: 'British Female' }
             ],
-            british: [
-                { id: 'bf_emma', name: 'Emma', desc: 'Elegant British Female' },
-                { id: 'bf_isabella', name: 'Isabella', desc: 'Professional British Female' },
-                { id: 'bm_george', name: 'George', desc: 'Distinguished British Male' },
-                { id: 'bm_lewis', name: 'Lewis', desc: 'Friendly British Male' }
+            chinese_female: [
+                { id: 'zf_001', name: '女声001', desc: '标准女声' },
+                { id: 'zf_002', name: '女声002', desc: '温柔女声' },
+                { id: 'zf_003', name: '女声003', desc: '活泼女声' }
+            ],
+            chinese_male: [
+                { id: 'zm_009', name: '男声009', desc: '成熟男声' },
+                { id: 'zm_010', name: '男声010', desc: '年轻男声' }
             ]
         };
     }
@@ -137,15 +141,10 @@ class AutoPracticeModeV2 {
                         <div class="voice-selector" id="voice-selector">
                             <label>Voice:</label>
                             <select id="voice-select">
-                                <optgroup label="American English">
-                                    <option value="am_michael" selected>Michael (Natural)</option>
-                                    <option value="am_adam">Adam (Clear)</option>
-                                </optgroup>
-                                <optgroup label="British English">
-                                    <option value="bf_emma">Emma (Elegant)</option>
-                                    <option value="bf_isabella">Isabella (Professional)</option>
-                                    <option value="bm_george">George (Distinguished)</option>
-                                    <option value="bm_lewis">Lewis (Friendly)</option>
+                                <optgroup label="English Voices">
+                                    <option value="af_maple" selected>Maple (American)</option>
+                                    <option value="af_sol">Sol (American)</option>
+                                    <option value="bf_vale">Vale (British)</option>
                                 </optgroup>
                             </select>
                         </div>
@@ -262,7 +261,7 @@ class AutoPracticeModeV2 {
         const voiceSelect = document.getElementById('voice-select');
         if (voiceSelect) {
             voiceSelect.addEventListener('change', (e) => {
-                this.config.ttsVoice = e.target.value;
+                this.selectedVoice = e.target.value;
             });
         }
     }
@@ -272,7 +271,7 @@ class AutoPracticeModeV2 {
      */
     async checkTTSService() {
         try {
-            const response = await fetch('http://localhost:5000/health', {
+            const response = await fetch('http://localhost:5050/api/status', {
                 method: 'GET',
                 mode: 'cors'
             });
@@ -311,7 +310,7 @@ class AutoPracticeModeV2 {
                 },
                 body: JSON.stringify({
                     text: text,
-                    voice: this.config.ttsVoice,
+                    voice: this.selectedVoice,
                     speed: 1.0,
                     save_audio: false,
                     language: 'en'  // 明确指定英语
@@ -324,8 +323,11 @@ class AutoPracticeModeV2 {
             
             const data = await response.json();
             
-            if (data.audio_base64) {
-                // 播放音频
+            if (data.audio_data) {
+                // 播放音频 - kokoro-tts-zh返回的是audio_data
+                this.playAudio(data.audio_data);
+            } else if (data.audio_base64) {
+                // 兼容旧格式
                 this.playAudio(data.audio_base64);
             }
         } catch (error) {

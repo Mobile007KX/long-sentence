@@ -23,9 +23,9 @@
     // 添加TTS相关属性
     Object.assign(AutoPracticeMode.prototype, {
         ttsEnabled: true,
-        ttsEndpoint: 'http://localhost:5050/api/tts',
+        ttsEndpoint: 'http://localhost:5050/api/generate',  // 注意端口是5050
         ttsAudio: null,
-        selectedVoice: 'am_michael', // 默认使用美式男声Michael
+        selectedVoice: 'af_maple', // 默认使用美式女声Maple
         
         // 增强的时间设置 - 原句停留时间更长
         stageTimings: {
@@ -78,15 +78,19 @@
                         <div class="voice-selector" id="voice-selector" style="display: flex; align-items: center; gap: 12px;">
                             <label>Voice:</label>
                             <select id="voice-select" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ddd;">
-                                <optgroup label="American English">
-                                    <option value="am_michael" selected>Michael (Natural)</option>
-                                    <option value="am_adam">Adam (Clear)</option>
+                                <optgroup label="English Voices">
+                                    <option value="af_maple" selected>Maple (American Female)</option>
+                                    <option value="af_sol">Sol (American Female)</option>
+                                    <option value="bf_vale">Vale (British Female)</option>
                                 </optgroup>
-                                <optgroup label="British English">
-                                    <option value="bf_emma">Emma (Elegant)</option>
-                                    <option value="bf_isabella">Isabella (Professional)</option>
-                                    <option value="bm_george">George (Distinguished)</option>
-                                    <option value="bm_lewis">Lewis (Friendly)</option>
+                                <optgroup label="Chinese Female">
+                                    <option value="zf_001">Female 001</option>
+                                    <option value="zf_002">Female 002</option>
+                                    <option value="zf_003">Female 003</option>
+                                </optgroup>
+                                <optgroup label="Chinese Male">
+                                    <option value="zm_009">Male 009</option>
+                                    <option value="zm_010">Male 010</option>
                                 </optgroup>
                             </select>
                         </div>
