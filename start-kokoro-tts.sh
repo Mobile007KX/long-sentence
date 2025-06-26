@@ -16,16 +16,16 @@ else
 fi
 
 # 检查端口占用
-if lsof -Pi :5000 -sTCP:LISTEN -t >/dev/null ; then
-    echo "⚠️  端口 5000 已被占用，尝试关闭..."
-    lsof -ti:5000 | xargs kill -9 2>/dev/null
+if lsof -Pi :5050 -sTCP:LISTEN -t >/dev/null ; then
+    echo "⚠️  端口 5050 已被占用，尝试关闭..."
+    lsof -ti:5050 | xargs kill -9 2>/dev/null
     sleep 2
 fi
 
 # 启动服务
 echo ""
-echo "📡 服务地址: http://localhost:5000"
-echo "📡 API文档: http://localhost:5000/api/docs"
+echo "📡 服务地址: http://localhost:5050"
+echo "📡 API文档: http://localhost:5050/api/docs"
 echo ""
 echo "🎤 可用音色："
 echo "   女声: 诗珊、小芳、小玲"

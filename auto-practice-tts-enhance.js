@@ -21,7 +21,7 @@
     // 添加TTS相关属性到原型
     Object.assign(AutoPracticeMode.prototype, {
         ttsEnabled: true,
-        ttsEndpoint: 'http://localhost:5000/api/tts', // Kokoro TTS API endpoint
+        ttsEndpoint: 'http://localhost:5050/api/tts', // Kokoro TTS API endpoint - 使用5050端口
         currentAudio: null,
         selectedVoice: 'zf_shishan', // 默认使用诗珊音色
         
@@ -148,7 +148,7 @@
     // 检查TTS服务
     AutoPracticeMode.prototype.checkTTSService = async function() {
         try {
-            const response = await fetch('http://localhost:5000/api/status', {
+            const response = await fetch('http://localhost:5050/api/status', {
                 method: 'GET',
                 mode: 'cors'
             });
