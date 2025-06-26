@@ -673,3 +673,5 @@ class AutoPracticeMode {
 
 // 创建全局实例
 const autoPracticeMode = new AutoPracticeMode();
+// 确保可以通过window访问
+window.autoPracticeMode = autoPracticeMode;
