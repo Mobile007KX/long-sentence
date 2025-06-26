@@ -14,6 +14,11 @@ class AutoPracticeMode {
         this.autoPlaySpeed = 3000; // 每个阶段3秒
         this.sentenceCount = 0;
         
+        // TTS设置
+        this.ttsEnabled = true;
+        this.selectedVoice = 'af_maple';
+        this.ttsEndpoint = 'http://localhost:5050/api/generate';
+        
         // 配置选项
         this.config = {
             difficulty: 'expert', // 默认专家级难度
