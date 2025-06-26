@@ -23,7 +23,7 @@
         ttsEnabled: true,
         ttsEndpoint: 'http://localhost:5050/api/generate', // Kokoro TTS API endpoint - 正确的路径
         currentAudio: null,
-        selectedVoice: 'zf_shishan', // 默认使用诗珊音色
+        selectedVoice: 'zf_001', // 默认使用女声001
         
         // 增强的时间设置 - 原句停留时间更长
         enhancedTimings: {
@@ -67,13 +67,17 @@
                             <label>选择音色：</label>
                             <select id="voice-select" style="padding: 8px 16px; border: 2px solid #e5e7eb; border-radius: 8px;">
                                 <optgroup label="女声">
-                                    <option value="zf_shishan" selected>诗珊（温柔知性）</option>
-                                    <option value="zf_xiaofang">小芳（活泼可爱）</option>
-                                    <option value="zf_xiaoling">小玲（清新自然）</option>
+                                    <option value="zf_001" selected>女声001（温柔）</option>
+                                    <option value="zf_002">女声002（清新）</option>
+                                    <option value="zf_003">女声003（活泼）</option>
+                                    <option value="zf_004">女声004（知性）</option>
+                                    <option value="zf_005">女声005（甜美）</option>
                                 </optgroup>
                                 <optgroup label="男声">
-                                    <option value="zm_haozi">浩子（成熟稳重）</option>
-                                    <option value="zm_xiaoyu">小宇（年轻阳光）</option>
+                                    <option value="zm_009">男声009（成熟）</option>
+                                    <option value="zm_010">男声010（阳光）</option>
+                                    <option value="zm_011">男声011（稳重）</option>
+                                    <option value="zm_012">男声012（磁性）</option>
                                 </optgroup>
                             </select>
                         </div>
@@ -185,19 +189,20 @@
                 body: JSON.stringify({
                     text: text,
                     voice: this.selectedVoice,
-                    speed: 1.0,
-                    save_audio: false
+                    language: 'zh'  // 添加语言参数
                 })
             });
             
             if (!response.ok) {
-                throw new Error('TTS生成失败');
+                const error = await response.json();
+                throw new Error(error.error || 'TTS生成失败');
             }
             
             const data = await response.json();
             
-            if (data.success && data.audio_base64) {
-                this.playAudio(data.audio_base64);
+            if (data.success && data.audio_data) {
+                // 播放音频 - 注意是audio_data不是audio_base64
+                this.playAudioFromDataURL(data.audio_data);
             }
         } catch (error) {
             console.error('TTS错误:', error);
@@ -205,15 +210,15 @@
         }
     };
 
-    // 播放音频
-    AutoPracticeMode.prototype.playAudio = function(base64Audio) {
+    // 播放音频（从data URL）
+    AutoPracticeMode.prototype.playAudioFromDataURL = function(audioDataURL) {
         const audio = document.getElementById('tts-audio');
         if (audio) {
             // 停止当前播放
             audio.pause();
             
-            // 设置新音频
-            audio.src = 'data:audio/wav;base64,' + base64Audio;
+            // 直接设置data URL
+            audio.src = audioDataURL;
             
             // 播放
             audio.play().catch(err => {
