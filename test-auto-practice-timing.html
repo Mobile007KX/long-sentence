@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动练习动态时间测试</title>
+    <link rel="stylesheet" href="auto-practice-mode.css">
+    <link rel="stylesheet" href="auto-practice-dynamic-timing.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-controls {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f8f8;
+            border-radius: 8px;
+        }
+        .test-sentence {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .timing-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f4fd;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+        .test-button {
+            background: #5B21B6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #6D28D9;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>自动练习动态时间测试</h1>
+        
+        <div class="test-controls">
+            <h3>测试句子</h3>
+            <button class="test-button" onclick="testShortSentence()">测试短句</button>
+            <button class="test-button" onclick="testMediumSentence()">测试中句</button>
+            <button class="test-button" onclick="testLongSentence()">测试长句</button>
+            <button class="test-button" onclick="testComplexSentence()">测试复杂句</button>
+        </div>
+        
+        <div id="test-output"></div>
+    </div>
+
+    <script>
+        // 模拟句子数据
+        const testSentences = {
+            short: {
+                sentence: "The quick brown fox jumps over the lazy dog.",
+                pattern: "SVO",
+                skeleton: "fox jumps over dog",
+                complexity_score: 3.5,
+                components: {
+                    subject: "fox",
+                    verb: "jumps",
+                    object: "dog"
+                },
+                clauses: []
+            },
+            medium: {
+                sentence: "The researchers who conducted the comprehensive study on climate change discovered that global temperatures have risen significantly over the past century.",
+                pattern: "SVO",
+                skeleton: "researchers discovered that temperatures risen",
+                complexity_score: 6.5,
+                components: {
+                    subject: "researchers",
+                    verb: "discovered",
+                    object: "that temperatures have risen"
+                },
+                clauses: [
+                    {type: "relative", text: "who conducted the comprehensive study"}
+                ]
+            },
+            long: {
+                sentence: "The quantum physicists who had been meticulously analyzing the paradoxical behavior of subatomic particles in superposition states, which seemingly defied all classical interpretations of reality that scientists had previously held sacrosanct, ultimately revolutionized our fundamental understanding of the universe's underlying mechanisms.",
+                pattern: "SVO",
+                skeleton: "physicists revolutionized understanding",
+                complexity_score: 8.5,
+                components: {
+                    subject: "physicists",
+                    verb: "revolutionized",
+                    object: "understanding"
+                },
+                clauses: [
+                    {type: "relative", text: "who had been meticulously analyzing the paradoxical behavior"},
+                    {type: "relative", text: "which seemingly defied all classical interpretations"}
+                ]
+            },
+            complex: {
+                sentence: "The interdisciplinary collaboration between neuroscientists, artificial intelligence researchers, and cognitive psychologists, which emerged from the recognition that understanding consciousness requires integrating multiple perspectives and methodologies, has yielded groundbreaking insights into how biological neural networks process information, form memories, and generate subjective experiences, thereby challenging traditional philosophical assumptions about the nature of mind and consciousness.",
+                pattern: "SVO",
+                skeleton: "collaboration has yielded insights",
+                complexity_score: 9.5,
+                components: {
+                    subject: "collaboration",
+                    verb: "has yielded",
+                    object: "insights"
+                },
+                clauses: [
+                    {type: "relative", text: "which emerged from the recognition"},
+                    {type: "participial", text: "thereby challenging traditional philosophical assumptions"}
+                ]
+            }
+        };
+
+        // 动态时间计算函数（从auto-practice-dynamic-timing.js复制）
+        function calculateReadingTime(sentenceData) {
+            const sentence = sentenceData.sentence;
+            const words = sentence.split(' ').length;
+            const complexity = sentenceData.complexity_score || 7.5;
+            
+            const baseWPM = {
+                slow: 150,
+                normal: 200,
+                fast: 250
+            };
+            
+            const complexityFactor = 1 + (complexity - 5) * 0.1;
+            
+            const baseTimes = {
+                slow: (words / baseWPM.slow) * 60 * 1000 * complexityFactor,
+                normal: (words / baseWPM.normal) * 60 * 1000 * complexityFactor,
+                fast: (words / baseWPM.fast) * 60 * 1000 * complexityFactor
+            };
+            
+            let extraTime = 0;
+            
+            if (sentenceData.clauses && sentenceData.clauses.length > 0) {
+                extraTime += sentenceData.clauses.length * 500;
+            }
+            
+            const longWords = sentence.split(' ').filter(word => word.length > 10).length;
+            extraTime += longWords * 200;
+            
+            const timings = {
+                slow: {
+                    original: Math.max(8000, Math.min(20000, baseTimes.slow + extraTime + 2000)),
+                    skeleton: 5000,
+                    clauses: 5000,
+                    adverbs: 5000,
+                    complete: 8000
+                },
+                normal: {
+                    original: Math.max(5000, Math.min(15000, baseTimes.normal + extraTime + 1500)),
+                    skeleton: 3000,
+                    clauses: 3000,
+                    adverbs: 3000,
+                    complete: 5000
+                },
+                fast: {
+                    original: Math.max(3000, Math.min(10000, baseTimes.fast + extraTime + 1000)),
+                    skeleton: 1500,
+                    clauses: 1500,
+                    adverbs: 1500,
+                    complete: 2500
+                }
+            };
+            
+            return timings;
+        }
+
+        function displayTestResult(type) {
+            const sentenceData = testSentences[type];
+            const timings = calculateReadingTime(sentenceData);
+            const words = sentenceData.sentence.split(' ').length;
+            
+            const output = document.getElementById('test-output');
+            output.innerHTML = `
+                <div class="test-sentence">
+                    <h4>${type.charAt(0).toUpperCase() + type.slice(1)} Sentence Test</h4>
+                    <div class="sentence-text">${sentenceData.sentence}</div>
+                    <div class="sentence-stats">
+                        <span class="word-count">单词数：${words}</span>
+                        <span class="complexity">复杂度：${sentenceData.complexity_score}</span>
+                        <span>从句数：${sentenceData.clauses.length}</span>
+                    </div>
+                    <div class="timing-info">
+                        <h5>计算的阅读时间：</h5>
+                        <div>慢速模式：${Math.round(timings.slow.original / 1000)}秒</div>
+                        <div>正常模式：${Math.round(timings.normal.original / 1000)}秒</div>
+                        <div>快速模式：${Math.round(timings.fast.original / 1000)}秒</div>
+                        <br>
+                        <div>基础阅读速度（WPM）：</div>
+                        <div>慢速：150词/分钟，正常：200词/分钟，快速：250词/分钟</div>
+                        <div>复杂度因子：${(1 + (sentenceData.complexity_score - 5) * 0.1).toFixed(2)}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function testShortSentence() {
+            displayTestResult('short');
+        }
+
+        function testMediumSentence() {
+            displayTestResult('medium');
+        }
+
+        function testLongSentence() {
+            displayTestResult('long');
+        }
+
+        function testComplexSentence() {
+            displayTestResult('complex');
+        }
+    </script>
+</body>
+</html>
