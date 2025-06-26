@@ -512,4 +512,235 @@
     .summary-stats-grid {
         grid-template-columns: 1fr;
     }
+}/* ============ TTS设置样式 ============ */
+
+.tts-settings {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    margin: 20px 0;
+    padding: 20px;
+    background: #f3f0ff;
+    border-radius: 12px;
+}
+
+.tts-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 开关样式 */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 26px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #5B21B6;
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+/* 音色选择器 */
+.voice-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: opacity 0.3s ease;
+}
+
+.voice-selector label {
+    font-weight: 500;
+    color: #374151;
+}
+
+.voice-selector select {
+    padding: 8px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.voice-selector select:hover {
+    border-color: #5B21B6;
+}
+
+.voice-selector select:focus {
+    outline: none;
+    border-color: #5B21B6;
+    box-shadow: 0 0 0 3px rgba(91, 33, 182, 0.1);
+}
+
+/* TTS状态提示 */
+.tts-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: #fef3c7;
+    border: 1px solid #fbbf24;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.tts-status .status-icon {
+    font-size: 20px;
+}
+
+.tts-status .status-text {
+    color: #92400e;
+    font-size: 14px;
+}
+
+/* 阶段提示 */
+.stage-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 16px;
+    z-index: 10;
+}
+
+.hint-text {
+    opacity: 0.9;
+}
+
+.countdown {
+    font-weight: 700;
+    font-size: 20px;
+    color: #fbbf24;
+    min-width: 40px;
+    text-align: center;
+}
+
+/* 原句展示优化 */
+.original-sentence-display {
+    text-align: center;
+    padding: 40px;
+    animation: fadeIn 0.5s ease;
+}
+
+.original-sentence-display .stage-label {
+    font-size: 16px;
+    color: #6b7280;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 30px;
+}
+
+.original-sentence-display .sentence-text {
+    font-size: 32px;
+    line-height: 1.8;
+    color: #1a1a1a;
+    font-weight: 400;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+/* 音频播放动画 */
+@keyframes audioPlaying {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.tts-playing {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #5B21B6;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: audioPlaying 1.5s infinite;
+}
+
+/* 总结页面优化 */
+.summary-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .tts-settings {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .voice-selector {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .voice-selector select {
+        width: 100%;
+    }
+    
+    .original-sentence-display .sentence-text {
+        font-size: 24px;
+    }
+    
+    .stage-hint {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+    
+    .countdown {
+        font-size: 18px;
+    }
+    
+    .summary-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

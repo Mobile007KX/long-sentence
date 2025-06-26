@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>测试自动练习模式</title>
+    <link rel="stylesheet" href="auto-practice-mode.css">
+    <link rel="stylesheet" href="challenge-mode-answer-styles-v2.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f7fa;
+        }
+        
+        .test-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1a1a1a;
+            margin-bottom: 30px;
+        }
+        
+        #test-auto-tab {
+            min-height: 800px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔄 自动练习模式测试</h1>
+        <div id="test-auto-tab"></div>
+    </div>
+
+    <!-- 模拟AI助手 -->
+    <script>
+        // 模拟AI助手对象
+        const aiAssistant = {
+            sendRequest: async function(messages) {
+                // 模拟AI生成句子
+                const complexSentences = [
+                    {
+                        sentence: "The groundbreaking research conducted by neuroscientists who specialized in cognitive development revealed that children exposed to multilingual environments from birth demonstrate significantly enhanced executive function and problem-solving abilities throughout their academic careers.",
+                        pattern: "SVO",
+                        skeleton: "research revealed that children demonstrate abilities",
+                        components: {
+                            subject: "research",
+                            verb: "revealed",
+                            object: "that children demonstrate abilities"
+                        },
+                        clauses: [
+                            {type: "participial", text: "conducted by neuroscientists"},
+                            {type: "relative", text: "who specialized in cognitive development"},
+                            {type: "participial", text: "exposed to multilingual environments"}
+                        ],
+                        complexity_score: 8.5
+                    },
+                    {
+                        sentence: "Despite facing unprecedented challenges during the global pandemic, innovative educators who embraced digital transformation successfully revolutionized traditional teaching methodologies by implementing interactive virtual classrooms that engaged students more effectively than conventional approaches.",
+                        pattern: "SVO",
+                        skeleton: "educators revolutionized methodologies",
+                        components: {
+                            subject: "educators",
+                            verb: "revolutionized",
+                            object: "methodologies"
+                        },
+                        clauses: [
+                            {type: "participial", text: "facing unprecedented challenges"},
+                            {type: "relative", text: "who embraced digital transformation"},
+                            {type: "relative", text: "that engaged students more effectively"}
+                        ],
+                        complexity_score: 9.2
+                    }
+                ];
+                
+                // 随机返回一个句子
+                const sentence = complexSentences[Math.floor(Math.random() * complexSentences.length)];
+                
+                // 模拟延迟
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                return {
+                    success: true,
+                    content: JSON.stringify(sentence)
+                };
+            }
+        };
+    </script>
+
+    <script src="challenge-mode-answer-display-v2.js"></script>
+    <script src="auto-practice-mode.js"></script>
+    <script>
+        // 初始化自动练习模式
+        window.onload = function() {
+            const container = document.getElementById('test-auto-tab');
+            autoPracticeMode.initializeUI(container);
+        };
+    </script>
+</body>
+</html>
