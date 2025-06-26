@@ -30,21 +30,21 @@
         // 增强的时间设置 - 原句停留时间更长
         stageTimings: {
             slow: {
-                original: 10000,    // 原句10秒（让用户有时间分析）
+                original: 15000,    // 原句15秒（让用户有充足时间分析）
                 skeleton: 5000,     // 主干5秒
                 clauses: 5000,      // 从句5秒
                 adverbs: 5000,      // 状语5秒
                 complete: 8000      // 完整8秒
             },
             normal: {
-                original: 7000,     // 原句7秒
+                original: 10000,    // 原句10秒
                 skeleton: 3000,     // 主干3秒
                 clauses: 3000,      // 从句3秒
                 adverbs: 3000,      // 状语3秒
                 complete: 5000      // 完整5秒
             },
             fast: {
-                original: 5000,     // 原句5秒
+                original: 7000,     // 原句7秒
                 skeleton: 1500,     // 主干1.5秒
                 clauses: 1500,      // 从句1.5秒
                 adverbs: 1500,      // 状语1.5秒

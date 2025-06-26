@@ -43,21 +43,21 @@ class AutoPracticeModeV2 {
         // 时间设置 - 原句停留时间更长
         this.stageTimings = {
             slow: {
-                original: 10000,    // 原句10秒（让用户有时间分析）
+                original: 15000,    // 原句15秒（让用户有充足时间分析）
                 skeleton: 5000,     // 主干5秒
                 clauses: 5000,      // 从句5秒
                 adverbs: 5000,      // 状语5秒
                 complete: 5000      // 完整5秒
             },
             normal: {
-                original: 7000,     // 原句7秒
+                original: 10000,     // 原句10秒
                 skeleton: 3000,     // 主干3秒
                 clauses: 3000,      // 从句3秒
                 adverbs: 3000,      // 状语3秒
                 complete: 3000      // 完整3秒
             },
             fast: {
-                original: 5000,     // 原句5秒
+                original: 7000,     // 原句7秒
                 skeleton: 2000,     // 主干2秒
                 clauses: 2000,      // 从句2秒
                 adverbs: 2000,      // 状语2秒
