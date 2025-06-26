@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动练习TTS调试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .debug-panel {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #5B21B6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #6D28D9;
+        }
+        .log {
+            background: #333;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 自动练习TTS调试工具</h1>
+    
+    <div class="debug-panel">
+        <h3>1. 基础TTS测试</h3>
+        <button onclick="testBasicTTS()">测试基础TTS功能</button>
+        <div id="basic-result"></div>
+    </div>
+    
+    <div class="debug-panel">
+        <h3>2. 自动练习模式状态</h3>
+        <button onclick="checkAutoPracticeMode()">检查自动练习模式</button>
+        <div id="mode-status"></div>
+    </div>
+    
+    <div class="debug-panel">
+        <h3>3. 手动触发TTS</h3>
+        <button onclick="manualTriggerTTS()">手动播放当前句子TTS</button>
+        <button onclick="simulateNextSentence()">模拟下一句</button>
+        <div id="manual-result"></div>
+    </div>
+    
+    <div class="debug-panel">
+        <h3>4. 控制台日志</h3>
+        <div id="console-log" class="log"></div>
+    </div>
+
+    <script>
+        // 劫持console.log显示在页面上
+        const logDiv = document.getElementById('console-log');
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog(...args);
+            const msg = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            logDiv.innerHTML += msg + '\n';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+        
+        async function testBasicTTS() {
+            const resultDiv = document.getElementById('basic-result');
+            resultDiv.innerHTML = '⏳ Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:5050/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: "This is a test of the text to speech system.",
+                        voice: 'af_maple',
+                        language: 'en'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.audio_data) {
+                    const audio = new Audio(data.audio_data);
+                    await audio.play();
+                    resultDiv.innerHTML = '<div class="status success">✅ TTS working correctly!</div>';
+                } else {
+                    throw new Error('No audio data');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        function checkAutoPracticeMode() {
+            const statusDiv = document.getElementById('mode-status');
+            
+            if (window.autoPracticeMode) {
+                const status = {
+                    exists: true,
+                    ttsEnabled: window.autoPracticeMode.ttsEnabled,
+                    selectedVoice: window.autoPracticeMode.selectedVoice,
+                    ttsEndpoint: window.autoPracticeMode.ttsEndpoint,
+                    currentSentence: window.autoPracticeMode.currentSentence ? 
+                        window.autoPracticeMode.currentSentence.sentence.substring(0, 50) + '...' : 
+                        'None',
+                    isRunning: window.autoPracticeMode.isRunning,
+                    hasPlayTTS: typeof window.autoPracticeMode.playTTS === 'function',
+                    hasGenerateTTS: typeof window.autoPracticeMode.generateTTS === 'function'
+                };
+                
+                statusDiv.innerHTML = `<div class="status success">
+                    <pre>${JSON.stringify(status, null, 2)}</pre>
+                </div>`;
+            } else {
+                statusDiv.innerHTML = '<div class="status error">❌ autoPracticeMode not found</div>';
+            }
+        }
+        
+        async function manualTriggerTTS() {
+            const resultDiv = document.getElementById('manual-result');
+            
+            if (!window.autoPracticeMode) {
+                resultDiv.innerHTML = '<div class="status error">❌ autoPracticeMode not found</div>';
+                return;
+            }
+            
+            if (!window.autoPracticeMode.currentSentence) {
+                resultDiv.innerHTML = '<div class="status error">❌ No current sentence</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '⏳ Playing TTS...';
+            
+            try {
+                // 尝试使用playTTS
+                if (window.autoPracticeMode.playTTS) {
+                    await window.autoPracticeMode.playTTS(window.autoPracticeMode.currentSentence.sentence);
+                    resultDiv.innerHTML = '<div class="status success">✅ TTS triggered via playTTS</div>';
+                }
+                // 尝试使用generateTTS
+                else if (window.autoPracticeMode.generateTTS) {
+                    await window.autoPracticeMode.generateTTS(window.autoPracticeMode.currentSentence.sentence);
+                    resultDiv.innerHTML = '<div class="status success">✅ TTS triggered via generateTTS</div>';
+                } else {
+                    throw new Error('No TTS function available');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        function simulateNextSentence() {
+            if (window.autoPracticeMode && window.autoPracticeMode.playNextSentence) {
+                window.autoPracticeMode.playNextSentence();
+                console.log('✅ Called playNextSentence');
+            } else {
+                console.error('❌ playNextSentence not available');
+            }
+        }
+        
+        // 加载完成后自动检查
+        window.onload = () => {
+            console.log('🔧 Debug page loaded');
+            setTimeout(() => {
+                checkAutoPracticeMode();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
