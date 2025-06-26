@@ -6,14 +6,62 @@
 (function() {
     'use strict';
     
-    // 确保 ProgressiveAnswerDisplayV2 已经加载
-    if (typeof ProgressiveAnswerDisplayV2 === 'undefined' || !window.progressiveAnswerDisplayV2) {
-        console.warn('ProgressiveAnswerDisplayV2 not found');
-        return;
+    // 等待 DOM 加载完成后再执行
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initFix);
+    } else {
+        initFix();
     }
     
-    // 保存原始方法
-    const originalCreateControls = ProgressiveAnswerDisplayV2.prototype.createEnhancedDisplayControls;
+    function initFix() {
+        // 确保 ProgressiveAnswerDisplayV2 已经加载
+        if (typeof ProgressiveAnswerDisplayV2 === 'undefined') {
+            console.warn('ProgressiveAnswerDisplayV2 not loaded yet, retrying...');
+            setTimeout(initFix, 100);
+            return;
+        }
+        
+        // 直接修复原型方法，不需要保存原始方法
+        
+        // 修复 autoPlay 方法
+        const originalAutoPlay = ProgressiveAnswerDisplayV2.prototype.autoPlay;
+        ProgressiveAnswerDisplayV2.prototype.autoPlay = function() {
+            if (this.autoPlayInterval) {
+                this.pauseAutoPlay();
+                return;
+            }
+            
+            const autoPlayBtn = this.container ? this.container.querySelector('.auto-play-text') : null;
+            if (autoPlayBtn) {
+                autoPlayBtn.textContent = '暂停';
+            }
+            
+            this.autoPlayInterval = setInterval(() => {
+                if (this.currentStage < this.maxStage) {
+                    this.nextStage();
+                } else {
+                    this.pauseAutoPlay();
+                }
+            }, this.displaySpeed);
+        };
+        
+        // 修复 pauseAutoPlay 方法
+        const originalPauseAutoPlay = ProgressiveAnswerDisplayV2.prototype.pauseAutoPlay;
+        ProgressiveAnswerDisplayV2.prototype.pauseAutoPlay = function() {
+            if (this.autoPlayInterval) {
+                clearInterval(this.autoPlayInterval);
+                this.autoPlayInterval = null;
+                
+                const autoPlayBtn = this.container ? this.container.querySelector('.auto-play-text') : null;
+                if (autoPlayBtn) {
+                    autoPlayBtn.textContent = '自动播放';
+                }
+            }
+        };
+        
+        console.log('✅ ProgressiveAnswerDisplayV2 空指针修复已应用');
+    }
+})();
     
     // 重写控制面板创建方法，添加更好的兼容性
     ProgressiveAnswerDisplayV2.prototype.createEnhancedDisplayControls = function() {

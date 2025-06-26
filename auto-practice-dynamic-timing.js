@@ -346,5 +346,8 @@
         }, timing.original);
     };
     
+    // 导出到全局作用域，供其他模块使用
+    window.calculateReadingTime = calculateReadingTime;
+    
     console.log('✅ 自动练习动态时间增强已加载');
 })();
