@@ -299,7 +299,7 @@ class ProgressiveAnswerDisplayV2 {
                     下一步 →
                 </button>
                 <button class="control-btn secondary" onclick="window.progressiveAnswerDisplay.toggleAutoPlay()">
-                    <span class="auto-play-text">暂停</span>
+                    <span class="auto-play-text">自动播放</span>
                 </button>
                 <button class="control-btn secondary" onclick="window.progressiveAnswerDisplay.reset()">
                     重置
@@ -490,7 +490,9 @@ class ProgressiveAnswerDisplayV2 {
         }
         
         const autoPlayBtn = this.container.querySelector('.auto-play-text');
-        autoPlayBtn.textContent = '暂停';
+        if (autoPlayBtn) {
+            autoPlayBtn.textContent = '暂停';
+        }
         
         this.autoPlayInterval = setInterval(() => {
             if (this.currentStage < this.maxStage) {
@@ -510,7 +512,9 @@ class ProgressiveAnswerDisplayV2 {
             this.autoPlayInterval = null;
             
             const autoPlayBtn = this.container.querySelector('.auto-play-text');
-            autoPlayBtn.textContent = '自动播放';
+            if (autoPlayBtn) {
+                autoPlayBtn.textContent = '自动播放';
+            }
         }
     }
 
