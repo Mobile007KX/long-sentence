@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平滑渐进显示测试</title>
+    <link rel="stylesheet" href="progressive-display-smooth.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .demo-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stage-button {
+            padding: 10px 20px;
+            border: none;
+            background: #5B21B6;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .stage-button:hover {
+            background: #6D28D9;
+        }
+        .stage-button.active {
+            background: #7C3AED;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 40px;
+        }
+        .comparison-item h3 {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 style="text-align: center; color: #5B21B6;">平滑渐进显示效果预览</h1>
+        
+        <div class="demo-controls">
+            <button class="stage-button active" onclick="setStage(0)">阶段0: 原句</button>
+            <button class="stage-button" onclick="setStage(1)">阶段1: 主干</button>
+            <button class="stage-button" onclick="setStage(2)">阶段2: 从句</button>
+            <button class="stage-button" onclick="setStage(3)">阶段3: 状语</button>
+            <button class="stage-button" onclick="setStage(4)">阶段4: 完整</button>
+        </div>
+        
+        <div class="sentence-display-container">
+            <div class="sentence-display progressive-display stage-0" id="demo-sentence">
+                <span class="word-token subject is-core" data-index="0">The</span>
+                <span class="word-token subject" data-index="1">judge<span class="punctuation">,</span></span>
+                <span class="word-token in-relative-clause" data-index="2">who</span>
+                <span class="word-token in-relative-clause" data-index="3">had</span>
+                <span class="word-token in-relative-clause adverb" data-index="4">carefully</span>
+                <span class="word-token in-relative-clause" data-index="5">reviewed</span>
+                <span class="word-token in-relative-clause" data-index="6">the</span>
+                <span class="word-token in-relative-clause" data-index="7">detailed</span>
+                <span class="word-token in-relative-clause" data-index="8">legal</span>
+                <span class="word-token in-relative-clause" data-index="9">arguments</span>
+                <span class="word-token in-relative-clause" data-index="10">that</span>
+                <span class="word-token in-relative-clause" data-index="11">were</span>
+                <span class="word-token in-relative-clause" data-index="12">presented</span>
+                <span class="word-token in-relative-clause in-prepositional-clause" data-index="13">by</span>
+                <span class="word-token in-relative-clause in-prepositional-clause" data-index="14">both</span>
+                <span class="word-token in-relative-clause in-prepositional-clause" data-index="15">parties<span class="punctuation">,</span></span>
+                <span class="word-token adverb" data-index="16">ultimately</span>
+                <span class="word-token verb is-core" data-index="17">decided</span>
+                <span class="word-token" data-index="18">to</span>
+                <span class="word-token object is-core" data-index="19">dismiss</span>
+                <span class="word-token object" data-index="20">the</span>
+                <span class="word-token object" data-index="21">case<span class="punctuation">,</span></span>
+                <span class="word-token" data-index="22">as</span>
+                <span class="word-token" data-index="23">the</span>
+                <span class="word-token" data-index="24">evidence</span>
+                <span class="word-token" data-index="25">was</span>
+                <span class="word-token" data-index="26">insufficient</span>
+                <span class="word-token" data-index="27">to</span>
+                <span class="word-token" data-index="28">support</span>
+                <span class="word-token" data-index="29">the</span>
+                <span class="word-token" data-index="30">claim<span class="punctuation">.</span></span>
+            </div>
+        </div>
+        
+        <div class="stage-explanation" id="stage-explanation">
+            完整的句子，包含所有成分
+        </div>
+        
+        <div class="skeleton-display" id="skeleton-display" style="display: none;">
+            <strong>核心结构：</strong>judge decided to dismiss case
+        </div>
+        
+        <div class="comparison">
+            <div class="comparison-item">
+                <h3>平滑效果特点</h3>
+                <ul>
+                    <li>句子位置保持固定，不会跳动</li>
+                    <li>字体大小和行高保持一致</li>
+                    <li>只通过颜色和背景变化展示结构</li>
+                    <li>过渡动画平滑自然</li>
+                    <li>阅读体验连贯不中断</li>
+                </ul>
+            </div>
+            <div class="comparison-item">
+                <h3>各阶段效果</h3>
+                <ul>
+                    <li><strong>阶段0:</strong> 原始句子，无任何标记</li>
+                    <li><strong>阶段1:</strong> 主干词汇加粗并添加下划线</li>
+                    <li><strong>阶段2:</strong> 从句部分添加淡色背景</li>
+                    <li><strong>阶段3:</strong> 状语部分添加橙色背景</li>
+                    <li><strong>阶段4:</strong> 所有成分用不同颜色标注</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const stageExplanations = {
+            0: "完整的句子，包含所有成分",
+            1: "突出显示句子主干：主语核心词 + 谓语 + 宾语核心词",
+            2: "显示定语从句，它们修饰并丰富了主语和宾语",
+            3: "显示状语，提供时间、地点和方式信息",
+            4: "完整的句子结构，不同颜色表示不同成分"
+        };
+        
+        function setStage(stage) {
+            const sentence = document.getElementById('demo-sentence');
+            const explanation = document.getElementById('stage-explanation');
+            const skeleton = document.getElementById('skeleton-display');
+            
+            // 更新句子阶段
+            for (let i = 0; i <= 4; i++) {
+                sentence.classList.remove(`stage-${i}`);
+            }
+            sentence.classList.add(`stage-${stage}`);
+            
+            // 更新说明文字
+            explanation.textContent = stageExplanations[stage];
+            
+            // 显示/隐藏骨架句
+            if (stage === 1) {
+                skeleton.style.display = 'block';
+                skeleton.classList.add('show');
+            } else {
+                skeleton.classList.remove('show');
+                setTimeout(() => {
+                    skeleton.style.display = 'none';
+                }, 500);
+            }
+            
+            // 更新按钮状态
+            document.querySelectorAll('.stage-button').forEach((btn, index) => {
+                btn.classList.toggle('active', index === stage);
+            });
+        }
+        
+        // 自动播放演示
+        let autoPlayInterval;
+        let currentStage = 0;
+        
+        function startAutoPlay() {
+            autoPlayInterval = setInterval(() => {
+                currentStage = (currentStage + 1) % 5;
+                setStage(currentStage);
+            }, 3000);
+        }
+        
+        function stopAutoPlay() {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+            }
+        }
+        
+        // 页面加载后自动开始
+        window.onload = () => {
+            setTimeout(startAutoPlay, 1000);
+        };
+    </script>
+</body>
+</html>

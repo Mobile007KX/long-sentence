@@ -1,0 +1,312 @@
+/**
+ * 平滑渐进式显示增强
+ * 保持句子位置稳定，只添加视觉标注
+ */
+
+.progressive-answer-display {
+    padding: 20px;
+}
+
+/* 句子容器 - 固定布局 */
+.sentence-display-container {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+/* 句子显示 - 保持稳定 */
+.sentence-display {
+    font-size: 24px;
+    line-height: 2;
+    text-align: center;
+    max-width: 1000px;
+    position: relative;
+}
+
+/* 单词样式 - 基础状态 */
+.word-token {
+    display: inline-block;
+    margin: 0 3px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    position: relative;
+    background: transparent;
+}
+
+/* 阶段0 - 原句（无标记） */
+.stage-0 .word-token {
+    color: #333;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+}
+
+/* 阶段1 - 主干高亮 */
+.stage-1 .word-token {
+    color: #666;
+    opacity: 0.6;
+}
+
+.stage-1 .word-token.subject,
+.stage-1 .word-token.verb,
+.stage-1 .word-token.object,
+.stage-1 .word-token.complement {
+    color: #333;
+    opacity: 1;
+    font-weight: 600;
+    border-bottom: 3px solid;
+}
+
+.stage-1 .word-token.subject {
+    border-bottom-color: #3b82f6;
+}
+
+.stage-1 .word-token.verb {
+    border-bottom-color: #ef4444;
+}
+
+.stage-1 .word-token.object {
+    border-bottom-color: #22c55e;
+}
+
+/* 阶段2 - 显示从句 */
+.stage-2 .word-token.in-relative-clause {
+    background: rgba(139, 92, 246, 0.1);
+    color: #333;
+    opacity: 1;
+}
+
+.stage-2 .word-token.in-participial-clause {
+    background: rgba(236, 72, 153, 0.1);
+    color: #333;
+    opacity: 1;
+}
+
+/* 阶段3 - 显示状语 */
+.stage-3 .word-token.adverb,
+.stage-3 .word-token.in-prepositional-clause {
+    background: rgba(251, 146, 60, 0.1);
+    color: #333;
+    opacity: 1;
+}
+
+/* 阶段4 - 完整展示 */
+.stage-4 .word-token {
+    opacity: 1;
+    color: #333;
+}
+
+/* 为不同成分使用不同的背景色 */
+.stage-4 .word-token.subject { 
+    background: rgba(59, 130, 246, 0.15);
+    border-bottom: 3px solid #3b82f6;
+}
+
+.stage-4 .word-token.verb { 
+    background: rgba(239, 68, 68, 0.15);
+    border-bottom: 3px solid #ef4444;
+}
+
+.stage-4 .word-token.object { 
+    background: rgba(34, 197, 94, 0.15);
+    border-bottom: 3px solid #22c55e;
+}
+
+.stage-4 .word-token.complement { 
+    background: rgba(168, 85, 247, 0.15);
+    border-bottom: 3px solid #a855f7;
+}
+
+.stage-4 .word-token.in-relative-clause {
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.stage-4 .word-token.in-participial-clause {
+    background: rgba(236, 72, 153, 0.15);
+}
+
+.stage-4 .word-token.adverb,
+.stage-4 .word-token.in-prepositional-clause {
+    background: rgba(251, 146, 60, 0.15);
+}
+
+/* 标点符号样式 */
+.punctuation {
+    margin-left: -3px;
+    color: #666;
+}
+
+/* 核心词特殊标记 */
+.word-token.is-core {
+    font-weight: 700;
+}
+
+/* 平滑过渡动画 */
+.progressive-display .word-token {
+    animation: none;
+}
+
+/* 阶段指示器样式优化 */
+.stage-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.stage-item {
+    padding: 8px 16px;
+    background: #f3f4f6;
+    border-radius: 20px;
+    font-size: 14px;
+    color: #666;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.stage-item.active {
+    background: #5B21B6;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* 阶段说明文字 */
+.stage-explanation {
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+    margin: 20px 0;
+    min-height: 24px;
+}
+
+/* 骨架句显示 - 更优雅 */
+.skeleton-display {
+    background: #f8f9fa;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-size: 18px;
+    text-align: center;
+    margin: 20px auto;
+    max-width: 600px;
+    font-weight: 500;
+    color: #374151;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.5s ease;
+}
+
+.skeleton-display.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 控制按钮样式优化 */
+.display-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.control-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #5B21B6;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+    background: #6D28D9;
+    transform: translateY(-1px);
+}
+
+.control-btn.secondary {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.control-btn.secondary:hover {
+    background: #d1d5db;
+}
+
+/* 自动练习模式特殊样式 */
+.auto-mode .sentence-display {
+    font-size: 28px;
+    line-height: 2.2;
+}
+
+.auto-mode .stage-indicators,
+.auto-mode .display-controls,
+.auto-mode .keyboard-hint {
+    display: none;
+}
+
+/* 答案图例样式 */
+.answer-legend {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+    padding: 15px;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.answer-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #666;
+}
+
+.answer-legend-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid;
+}
+
+.answer-legend-box.correct {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: #22c55e;
+}
+
+.answer-legend-box.wrong {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+}
+
+.answer-legend-box.missed {
+    background: rgba(251, 191, 36, 0.2);
+    border-color: #f59e0b;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .sentence-display {
+        font-size: 20px;
+        line-height: 1.8;
+    }
+    
+    .auto-mode .sentence-display {
+        font-size: 22px;
+        line-height: 2;
+    }
+    
+    .stage-indicators {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .stage-item {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}
