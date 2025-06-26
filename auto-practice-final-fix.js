@@ -23,6 +23,12 @@
         AutoPracticeMode.prototype.displaySentenceProgressive = function() {
             console.log('📍 FINAL displaySentenceProgressive called');
             
+            // 停止之前的音频
+            if (this.currentAudio) {
+                this.currentAudio.pause();
+                this.currentAudio = null;
+            }
+            
             const container = document.getElementById('auto-sentence-display');
             if (!container || !this.currentSentence) return;
             
@@ -100,7 +106,7 @@
         // 播放TTS并确保完整时长
         AutoPracticeMode.prototype.playTTSWithFullDuration = function() {
             const statusEl = document.getElementById('tts-status');
-            let audioPlayed = false;
+            let audioHandled = false; // 防止重复处理
             
             // 尝试播放音频
             if (this.ttsEnabled && this.selectedVoice) {
@@ -115,11 +121,14 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.audio_data) {
+                    if (data.audio_data && !audioHandled) {
+                        audioHandled = true;
                         const audio = new Audio(data.audio_data);
-                        audioPlayed = true;
                         
-                        // 重要：不要在这里设置任何超时！
+                        // 保存音频引用，防止被垃圾回收
+                        this.currentAudio = audio;
+                        
+                        // 重要：设置所有事件监听器
                         audio.onended = () => {
                             console.log('✅ Audio finished naturally');
                             if (statusEl) statusEl.textContent = '✅ Completed';
@@ -130,23 +139,39 @@
                             }, 3000);
                         };
                         
-                        audio.onerror = () => {
-                            console.error('❌ Audio playback error');
-                            this.fallbackTiming();
+                        audio.onerror = (e) => {
+                            console.error('❌ Audio playback error:', e);
+                            if (!audioHandled) {
+                                audioHandled = true;
+                                this.fallbackTiming();
+                            }
+                        };
+                        
+                        audio.onloadeddata = () => {
+                            console.log('✅ Audio loaded, duration:', audio.duration);
                         };
                         
                         // 播放
-                        audio.play().catch(err => {
+                        audio.play().then(() => {
+                            console.log('🔊 Audio playing...');
+                        }).catch(err => {
                             console.error('❌ Play failed:', err);
-                            this.fallbackTiming();
+                            if (!audioHandled) {
+                                audioHandled = true;
+                                this.fallbackTiming();
+                            }
                         });
-                    } else {
+                    } else if (!audioHandled) {
+                        audioHandled = true;
                         this.fallbackTiming();
                     }
                 })
                 .catch(error => {
                     console.error('❌ TTS request failed:', error);
-                    this.fallbackTiming();
+                    if (!audioHandled) {
+                        audioHandled = true;
+                        this.fallbackTiming();
+                    }
                 });
             } else {
                 this.fallbackTiming();
